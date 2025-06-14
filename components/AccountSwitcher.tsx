@@ -40,19 +40,19 @@ export function AccountSwitcher({ currentAccount, onAccountChange }: AccountSwit
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="inline-flex items-center space-x-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 text-sm"
+        className="inline-flex items-center space-x-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 transition-all duration-200 text-sm rounded-md"
       >
         <div className="flex items-center space-x-2">
-          <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center">
+          <div className="w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center">
             {activeAccount.type === 'business' ? (
-              <Building2 className="w-3 h-3 text-orange-600" />
+              <Building2 className="w-2.5 h-2.5 text-gray-500" />
             ) : (
-              <User className="w-3 h-3 text-orange-600" />
+              <User className="w-2.5 h-2.5 text-gray-500" />
             )}
           </div>
-          <span className="font-medium text-gray-900">{activeAccount.name}</span>
+          <span className="font-medium text-gray-700">{activeAccount.name}</span>
         </div>
-        <ChevronDown className="w-4 h-4 text-gray-500" />
+        <ChevronDown className="w-3 h-3 text-gray-400" />
       </button>
 
       <AccountSwitcherModal

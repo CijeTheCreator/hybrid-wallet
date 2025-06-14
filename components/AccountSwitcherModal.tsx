@@ -98,16 +98,16 @@ export function AccountSwitcherModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[80vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[80vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Switch Account</h2>
+        <div className="flex items-center justify-center p-6 relative">
+          <h2 className="text-lg font-medium text-gray-900">Switch Account</h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+            className="absolute right-6 p-1 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
 
@@ -116,16 +116,16 @@ export function AccountSwitcherModal({
           {!showCreateForm ? (
             <>
               {/* Account List */}
-              <div className="p-6">
-                <div className="space-y-3">
+              <div className="px-6 pb-6">
+                <div className="space-y-2">
                   {accounts.map((account) => (
                     <button
                       key={account.id}
                       onClick={() => handleAccountClick(account)}
-                      className={`w-full flex items-center justify-between p-4 rounded-lg border transition-all duration-200 ${
+                      className={`w-full flex items-center justify-between p-4 rounded-lg transition-all duration-200 ${
                         account.id === currentAccount.id
-                          ? 'border-orange-300 bg-orange-50'
-                          : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                          ? 'bg-orange-50'
+                          : 'hover:bg-gray-50'
                       }`}
                     >
                       <div className="flex items-center space-x-3">
@@ -163,7 +163,7 @@ export function AccountSwitcherModal({
               <div className="px-6 pb-6">
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="w-full flex items-center justify-center space-x-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 text-gray-600 hover:text-orange-600"
+                  className="w-full flex items-center justify-center space-x-2 p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all duration-200 text-gray-600"
                 >
                   <Plus className="w-5 h-5" />
                   <span className="font-medium">Create New Account</span>
@@ -172,8 +172,8 @@ export function AccountSwitcherModal({
             </>
           ) : (
             /* Create Account Form */
-            <div className="p-6">
-              <div className="mb-6">
+            <div className="px-6 pb-6">
+              <div className="mb-6 text-center">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Create New Account</h3>
                 <p className="text-sm text-gray-500">Set up a new wallet account for your crypto assets.</p>
               </div>
@@ -189,7 +189,7 @@ export function AccountSwitcherModal({
                     value={newAccountName}
                     onChange={(e) => setNewAccountName(e.target.value)}
                     placeholder="Enter account name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-colors"
                   />
                 </div>
 
@@ -203,7 +203,7 @@ export function AccountSwitcherModal({
                     onChange={(e) => setNewAccountDescription(e.target.value)}
                     placeholder="Brief description of this account"
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-colors resize-none"
                   />
                 </div>
 
@@ -215,10 +215,10 @@ export function AccountSwitcherModal({
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => setNewAccountType('personal')}
-                      className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors ${
+                      className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                         newAccountType === 'personal'
-                          ? 'border-orange-300 bg-orange-50 text-orange-700'
-                          : 'border-gray-200 hover:bg-gray-50'
+                          ? 'bg-orange-50 text-orange-700'
+                          : 'bg-gray-50 hover:bg-gray-100'
                       }`}
                     >
                       <User className="w-5 h-5" />
@@ -226,10 +226,10 @@ export function AccountSwitcherModal({
                     </button>
                     <button
                       onClick={() => setNewAccountType('business')}
-                      className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors ${
+                      className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                         newAccountType === 'business'
-                          ? 'border-blue-300 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 hover:bg-gray-50'
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'bg-gray-50 hover:bg-gray-100'
                       }`}
                     >
                       <Building2 className="w-5 h-5" />
@@ -255,7 +255,7 @@ export function AccountSwitcherModal({
                     setNewAccountDescription('');
                     setNewAccountType('personal');
                   }}
-                  className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                 >
                   Cancel
                 </button>
