@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Plus, Zap, ArrowUpRight, ArrowDownLeft, Calendar, ArrowLeftRight, Grid as Bridge, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, Zap, ArrowUpRight, ArrowDownLeft, Calendar, ArrowLeftRight, Grid as Bridge, TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AccountSwitcher } from './AccountSwitcher';
+import { EnhancedChatInput } from './EnhancedChatInput';
 
 interface Message {
   id: string;
@@ -20,6 +21,7 @@ interface ChatAreaProps {
 
 export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAreaProps) {
   const [input, setInput] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -30,11 +32,8 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAr
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    
-    onSendMessage(input.trim());
+  const handleSubmit = (content: string) => {
+    onSendMessage(content);
     setInput('');
   };
 
@@ -50,9 +49,30 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAr
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col relative">
+        {/* Blur Overlay */}
+        {isInputFocused && (
+          <div className="absolute inset-0 z-10 pointer-events-none">
+            <div 
+              className="absolute inset-0 backdrop-blur-sm bg-white/30 transition-all duration-300"
+              style={{
+                maskImage: `
+                  radial-gradient(ellipse at center bottom, transparent 0%, transparent 25%, black 60%),
+                  linear-gradient(to bottom, black 0%, black 70%, transparent 100%)
+                `,
+                WebkitMaskImage: `
+                  radial-gradient(ellipse at center bottom, transparent 0%, transparent 25%, black 60%),
+                  linear-gradient(to bottom, black 0%, black 70%, transparent 100%)
+                `,
+                maskComposite: 'intersect',
+                WebkitMaskComposite: 'source-in'
+              }}
+            />
+          </div>
+        )}
+
         <div className="flex-1 flex items-center justify-center">
-          <div className="max-w-2xl w-full px-6">
+          <div className="max-w-2xl w-full px-6 relative z-20">
             <div className="text-center mb-8">
               {/* Account Switcher */}
               <div className="flex justify-center mb-4">
@@ -64,45 +84,31 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAr
               </h1>
             </div>
 
-            <form onSubmit={handleSubmit} className="mb-8">
-              <div className="relative">
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="How can I help you today?"
-                  className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  rows={3}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmit(e);
-                    }
-                  }}
-                />
-                <div className="absolute bottom-4 right-4 flex items-center space-x-2">
-                  <button
-                    type="button"
-                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <Zap className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </form>
+            <div className="mb-8">
+              <EnhancedChatInput
+                value={input}
+                onChange={setInput}
+                onSubmit={handleSubmit}
+                placeholder="How can I help you today?"
+                rows={3}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+                isFocused={isInputFocused}
+              />
+            </div>
 
             {isHomePage && (
-              <div className="flex flex-wrap gap-3 justify-center">
+              <div 
+                className={cn(
+                  "flex flex-wrap gap-3 justify-center transition-all duration-300 relative z-20",
+                  isInputFocused ? "opacity-100" : "opacity-100"
+                )}
+              >
                 {quickActions.map((action, index) => (
                   <button
                     key={index}
                     onClick={() => setInput(action.description)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+                    className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 hover:scale-105"
                   >
                     <action.icon className="w-4 h-4 text-gray-600" />
                     <span className="text-sm font-medium text-gray-700">{action.label}</span>
@@ -156,30 +162,15 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAr
       </div>
 
       <div className="border-t border-gray-200 p-6">
-        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-          <div className="relative">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message..."
-              className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              rows={2}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }
-              }}
-            />
-            <button
-              type="submit"
-              disabled={!input.trim()}
-              className="absolute bottom-4 right-4 p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-        </form>
+        <div className="max-w-3xl mx-auto">
+          <EnhancedChatInput
+            value={input}
+            onChange={setInput}
+            onSubmit={handleSubmit}
+            placeholder="Type your message..."
+            rows={2}
+          />
+        </div>
       </div>
     </div>
   );
