@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { TransactionContextMenu } from './TransactionContextMenu';
+import { AccountSwitcher } from './AccountSwitcher';
 
 interface Transaction {
   id: string;
@@ -221,6 +222,11 @@ export function TransactionHistory() {
           <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="mb-8">
+              {/* Account Switcher */}
+              <div className="mb-4">
+                <AccountSwitcher />
+              </div>
+              
               <h1 className="text-2xl font-light text-gray-800 mb-6">
                 Your transaction history
               </h1>

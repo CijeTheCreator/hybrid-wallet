@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Search, Wallet, TrendingUp, DollarSign, Activity } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { TokenContextMenu } from './TokenContextMenu';
+import { AccountSwitcher } from './AccountSwitcher';
 
 interface Token {
   id: string;
@@ -222,6 +223,11 @@ export function AssetsPage() {
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div className="mb-8">
+              {/* Account Switcher */}
+              <div className="mb-4">
+                <AccountSwitcher />
+              </div>
+              
               <h1 className="text-2xl font-light text-gray-800 mb-6">
                 Your Assets
               </h1>

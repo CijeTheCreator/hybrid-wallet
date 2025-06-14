@@ -12,6 +12,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Sidebar } from './Sidebar';
+import { AccountSwitcher } from './AccountSwitcher';
 
 export function SettingsPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -116,6 +117,11 @@ export function SettingsPage() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
+            {/* Account Switcher */}
+            <div className="mb-4">
+              <AccountSwitcher />
+            </div>
+            
             <h1 className="text-2xl font-light text-gray-800 mb-2">Settings</h1>
             <p className="text-gray-600">Manage your account preferences and security settings.</p>
           </div>

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Plus, Zap, ArrowUpRight, ArrowDownLeft, Calendar, ArrowLeftRight, Grid as Bridge, TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AccountSwitcher } from './AccountSwitcher';
 
 interface Message {
   id: string;
@@ -53,6 +54,11 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAr
         <div className="flex-1 flex items-center justify-center">
           <div className="max-w-2xl w-full px-6">
             <div className="text-center mb-8">
+              {/* Account Switcher */}
+              <div className="flex justify-center mb-4">
+                <AccountSwitcher />
+              </div>
+              
               <h1 className="text-3xl font-light text-gray-800 mb-2">
                 {isHomePage ? "Hey there, Chijioke" : "New Chat"}
               </h1>
