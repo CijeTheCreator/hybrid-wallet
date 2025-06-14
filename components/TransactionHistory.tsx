@@ -5,6 +5,7 @@ import { Search } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { TransactionContextMenu } from './TransactionContextMenu';
 import { AccountSwitcher } from './AccountSwitcher';
+import { useRouter } from 'next/navigation';
 
 interface Transaction {
   id: string;
@@ -12,6 +13,7 @@ interface Transaction {
   lastMessage: string;
   amount: number; // positive for increase, negative for decrease
   type: 'increase' | 'decrease';
+  transactionType: 'chat' | 'simple'; // New field to distinguish transaction types
   breakdown: {
     send: number;
     schedule: number;
@@ -23,6 +25,7 @@ interface Transaction {
 }
 
 export function TransactionHistory() {
+  const router = useRouter();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredTransaction, setHoveredTransaction] = useState<Transaction | null>(null);
@@ -31,14 +34,49 @@ export function TransactionHistory() {
   const [isMenuAnimating, setIsMenuAnimating] = useState(false);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Mock transaction data with breakdown
+  // Mock transaction data with breakdown - mix of chat and simple transactions
   const transactions: Transaction[] = [
+    // Simple transactions (crypto transfers)
     {
-      id: '1',
+      id: 'simple-1',
+      title: 'Received ETH from Alice',
+      lastMessage: 'Transaction completed 30 minutes ago',
+      amount: 10.0,
+      type: 'increase',
+      transactionType: 'simple',
+      breakdown: {
+        send: 0,
+        schedule: 0,
+        swap: 0,
+        borrow: 0,
+        lend: 0,
+        bridge: 0
+      }
+    },
+    {
+      id: 'simple-2',
+      title: 'Sent USDC to Bob',
+      lastMessage: 'Transaction completed 1 hour ago',
+      amount: -500.0,
+      type: 'decrease',
+      transactionType: 'simple',
+      breakdown: {
+        send: 0,
+        schedule: 0,
+        swap: 0,
+        borrow: 0,
+        lend: 0,
+        bridge: 0
+      }
+    },
+    // Chat transactions (existing ones)
+    {
+      id: 'chat-1',
       title: 'Enhance this prompt for v0 Re...',
       lastMessage: 'Last message 3 hours ago',
       amount: 250.75,
       type: 'increase',
+      transactionType: 'chat',
       breakdown: {
         send: 150.25,
         schedule: 50.00,
@@ -49,11 +87,12 @@ export function TransactionHistory() {
       }
     },
     {
-      id: '2',
+      id: 'chat-2',
       title: 'AI Assistant Capabilities Overview',
       lastMessage: 'Last message 3 hours ago',
       amount: -89.32,
       type: 'decrease',
+      transactionType: 'chat',
       breakdown: {
         send: 45.32,
         schedule: 0,
@@ -64,11 +103,28 @@ export function TransactionHistory() {
       }
     },
     {
-      id: '3',
+      id: 'simple-3',
+      title: 'Swapped ETH for USDC',
+      lastMessage: 'Transaction completed 2 hours ago',
+      amount: -2.5,
+      type: 'decrease',
+      transactionType: 'simple',
+      breakdown: {
+        send: 0,
+        schedule: 0,
+        swap: 0,
+        borrow: 0,
+        lend: 0,
+        bridge: 0
+      }
+    },
+    {
+      id: 'chat-3',
       title: 'Docker Multi-App Container Setup',
       lastMessage: 'Last message 4 days ago',
       amount: 1500.00,
       type: 'increase',
+      transactionType: 'chat',
       breakdown: {
         send: 800.00,
         schedule: 200.00,
@@ -79,11 +135,12 @@ export function TransactionHistory() {
       }
     },
     {
-      id: '4',
+      id: 'chat-4',
       title: 'Ethereum Faucet Route with Prisma',
       lastMessage: 'Last message 4 days ago',
       amount: -45.67,
       type: 'decrease',
+      transactionType: 'chat',
       breakdown: {
         send: 25.67,
         schedule: 0,
@@ -94,61 +151,17 @@ export function TransactionHistory() {
       }
     },
     {
-      id: '5',
-      title: 'Untitled',
-      lastMessage: 'Last message 4 days ago',
-      amount: 75.25,
+      id: 'simple-4',
+      title: 'Received ALGO from Carol',
+      lastMessage: 'Transaction completed 1 day ago',
+      amount: 150.0,
       type: 'increase',
+      transactionType: 'simple',
       breakdown: {
-        send: 40.25,
-        schedule: 15.00,
-        swap: 20.00,
-        borrow: 0,
-        lend: 0,
-        bridge: 0
-      }
-    },
-    {
-      id: '6',
-      title: 'SendGrid Email API Curl Request',
-      lastMessage: 'Last message 5 days ago',
-      amount: -320.50,
-      type: 'decrease',
-      breakdown: {
-        send: 200.50,
-        schedule: 50.00,
-        swap: 70.00,
-        borrow: 0,
-        lend: 0,
-        bridge: 0
-      }
-    },
-    {
-      id: '7',
-      title: 'Flask Project Docker Configuration',
-      lastMessage: 'Last message 5 days ago',
-      amount: 125.80,
-      type: 'increase',
-      breakdown: {
-        send: 75.80,
-        schedule: 25.00,
-        swap: 15.00,
-        borrow: 0,
-        lend: 10.00,
-        bridge: 0
-      }
-    },
-    {
-      id: '8',
-      title: 'Clerk Webhook User Creation',
-      lastMessage: 'Last message 6 days ago',
-      amount: -67.45,
-      type: 'decrease',
-      breakdown: {
-        send: 35.45,
+        send: 0,
         schedule: 0,
-        swap: 20.00,
-        borrow: 12.00,
+        swap: 0,
+        borrow: 0,
         lend: 0,
         bridge: 0
       }
@@ -163,6 +176,16 @@ export function TransactionHistory() {
     window.location.href = '/';
   };
 
+  const handleTransactionClick = (transaction: Transaction) => {
+    if (transaction.transactionType === 'simple') {
+      // Navigate to transaction details page
+      router.push(`/transactions/${transaction.id}`);
+    } else {
+      // Navigate to chat transaction
+      router.push(`/chats/${transaction.id}`);
+    }
+  };
+
   const clearHideTimeout = () => {
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
@@ -171,6 +194,9 @@ export function TransactionHistory() {
   };
 
   const handleMouseEnter = (transaction: Transaction, event: React.MouseEvent) => {
+    // Only show context menu for chat transactions (they have breakdown data)
+    if (transaction.transactionType !== 'chat') return;
+    
     clearHideTimeout();
     setHoveredTransaction(transaction);
     setMousePosition({ x: event.clientX, y: event.clientY });
@@ -245,7 +271,7 @@ export function TransactionHistory() {
               
               {/* Transaction Count */}
               <p className="text-gray-600 text-sm mb-6">
-                You have {transactions.length} previous transactions with Claude
+                You have {transactions.length} previous transactions
               </p>
             </div>
 
@@ -255,15 +281,26 @@ export function TransactionHistory() {
                 <div
                   key={transaction.id}
                   className="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer relative"
+                  onClick={() => handleTransactionClick(transaction)}
                   onMouseEnter={(e) => handleMouseEnter(transaction, e)}
                   onMouseLeave={handleMouseLeave}
                   onMouseMove={handleMouseMove}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-gray-900 font-medium text-sm mb-1 truncate">
-                        {transaction.title}
-                      </h3>
+                      <div className="flex items-center space-x-2 mb-1">
+                        <h3 className="text-gray-900 font-medium text-sm truncate">
+                          {transaction.title}
+                        </h3>
+                        {/* Transaction Type Badge */}
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          transaction.transactionType === 'simple' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-purple-100 text-purple-800'
+                        }`}>
+                          {transaction.transactionType === 'simple' ? 'Transfer' : 'Chat'}
+                        </span>
+                      </div>
                       <p className="text-gray-500 text-xs">
                         {transaction.lastMessage}
                       </p>
@@ -297,8 +334,8 @@ export function TransactionHistory() {
         </div>
       </div>
 
-      {/* Context Menu */}
-      {hoveredTransaction && (
+      {/* Context Menu - Only for chat transactions */}
+      {hoveredTransaction && hoveredTransaction.transactionType === 'chat' && (
         <TransactionContextMenu
           transaction={hoveredTransaction}
           position={mousePosition}

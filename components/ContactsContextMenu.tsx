@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 
 interface Contact {
   id: string;
@@ -17,6 +17,8 @@ interface ContactsContextMenuProps {
   onContactSelect: (contact: Contact) => void;
   onClose: () => void;
   searchQuery: string;
+  selectedIndex: number;
+  onSelectedIndexChange: (index: number) => void;
 }
 
 export function ContactsContextMenu({
@@ -24,8 +26,13 @@ export function ContactsContextMenu({
   position,
   onContactSelect,
   onClose,
-  searchQuery
+  searchQuery,
+  selectedIndex,
+  onSelectedIndexChange
 }: ContactsContextMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const selectedItemRef = useRef<HTMLButtonElement>(null);
+
   // Filter contacts based on search query
   const filteredContacts = useMemo(() => {
     if (!searchQuery.trim()) return contacts;
@@ -36,6 +43,49 @@ export function ContactsContextMenu({
       contact.username.toLowerCase().includes(query)
     );
   }, [contacts, searchQuery]);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (filteredContacts.length === 0) return;
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          const nextIndex = selectedIndex < filteredContacts.length - 1 ? selectedIndex + 1 : 0;
+          onSelectedIndexChange(nextIndex);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          const prevIndex = selectedIndex > 0 ? selectedIndex - 1 : filteredContacts.length - 1;
+          onSelectedIndexChange(prevIndex);
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (selectedIndex >= 0 && selectedIndex < filteredContacts.length) {
+            onContactSelect(filteredContacts[selectedIndex]);
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          onClose();
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [filteredContacts, selectedIndex, onSelectedIndexChange, onContactSelect, onClose]);
+
+  // Scroll selected item into view
+  useEffect(() => {
+    if (selectedItemRef.current) {
+      selectedItemRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      });
+    }
+  }, [selectedIndex]);
 
   // Calculate optimal positioning
   const menuWidth = 280;
@@ -77,6 +127,7 @@ export function ContactsContextMenu({
       
       {/* Menu */}
       <div
+        ref={menuRef}
         style={menuStyle}
         className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200 z-50"
       >
@@ -87,13 +138,22 @@ export function ContactsContextMenu({
               {filteredContacts.map((contact, index) => (
                 <button
                   key={contact.id}
+                  ref={index === selectedIndex ? selectedItemRef : null}
                   onClick={() => onContactSelect(contact)}
-                  className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left animate-in fade-in-0 slide-in-from-left-2 duration-200"
+                  className={`w-full flex items-center space-x-3 px-4 py-3 transition-colors text-left animate-in fade-in-0 slide-in-from-left-2 duration-200 ${
+                    index === selectedIndex 
+                      ? 'bg-orange-50 border-l-2 border-orange-500' 
+                      : 'hover:bg-gray-50'
+                  }`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   {/* Avatar */}
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
+                      index === selectedIndex 
+                        ? 'bg-gradient-to-br from-orange-400 to-pink-500 scale-110' 
+                        : 'bg-gradient-to-br from-orange-400 to-pink-500'
+                    }`}>
                       <span className="text-white font-medium text-sm">
                         {contact.name.charAt(0).toUpperCase()}
                       </span>
@@ -102,16 +162,29 @@ export function ContactsContextMenu({
 
                   {/* Contact Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate text-sm">
+                    <p className={`font-medium truncate text-sm transition-colors duration-200 ${
+                      index === selectedIndex ? 'text-orange-900' : 'text-gray-900'
+                    }`}>
                       {contact.name}
                     </p>
-                    <p className="text-sm text-gray-500 truncate">
+                    <p className={`text-sm truncate transition-colors duration-200 ${
+                      index === selectedIndex ? 'text-orange-700' : 'text-gray-500'
+                    }`}>
                       @{contact.username}
                     </p>
-                    <p className="text-xs text-gray-400 truncate font-mono">
+                    <p className={`text-xs truncate font-mono transition-colors duration-200 ${
+                      index === selectedIndex ? 'text-orange-600' : 'text-gray-400'
+                    }`}>
                       {truncateAddress(contact.walletAddress)}
                     </p>
                   </div>
+
+                  {/* Selection Indicator */}
+                  {index === selectedIndex && (
+                    <div className="flex-shrink-0">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+                    </div>
+                  )}
                 </button>
               ))}
             </div>

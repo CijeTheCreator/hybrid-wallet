@@ -59,6 +59,7 @@ export function EnhancedChatInput({
   const [showContacts, setShowContacts] = useState(false);
   const [contactsPosition, setContactsPosition] = useState({ x: 0, y: 0 });
   const [atSymbolPosition, setAtSymbolPosition] = useState(-1);
+  const [selectedContactIndex, setSelectedContactIndex] = useState(-1);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -191,6 +192,7 @@ export function EnhancedChatInput({
       if (!hasSpaceAfterAt && textareaRef.current && containerRef.current) {
         setAtSymbolPosition(lastAtIndex);
         setShowContacts(true);
+        setSelectedContactIndex(-1); // Reset selection when showing contacts
         
         // Calculate position for contacts menu
         const containerRect = containerRef.current.getBoundingClientRect();
@@ -201,12 +203,22 @@ export function EnhancedChatInput({
       } else {
         setShowContacts(false);
         setAtSymbolPosition(-1);
+        setSelectedContactIndex(-1);
       }
     } else {
       setShowContacts(false);
       setAtSymbolPosition(-1);
+      setSelectedContactIndex(-1);
     }
   }, [value]);
+
+  // Initialize selected index when contacts menu opens
+  useEffect(() => {
+    if (showContacts && selectedContactIndex === -1) {
+      // Don't auto-select first item, wait for arrow key
+      setSelectedContactIndex(-1);
+    }
+  }, [showContacts]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -215,6 +227,11 @@ export function EnhancedChatInput({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // If contacts menu is open, let it handle arrow keys
+    if (showContacts && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === 'Escape')) {
+      return; // Let ContactsContextMenu handle these keys
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
@@ -233,7 +250,12 @@ export function EnhancedChatInput({
     }
     setShowContacts(false);
     setAtSymbolPosition(-1);
+    setSelectedContactIndex(-1);
     textareaRef.current?.focus();
+  };
+
+  const handleSelectedIndexChange = (index: number) => {
+    setSelectedContactIndex(index);
   };
 
   const handleFocus = () => {
@@ -383,12 +405,15 @@ export function EnhancedChatInput({
           onClose={() => {
             setShowContacts(false);
             setAtSymbolPosition(-1);
+            setSelectedContactIndex(-1);
           }}
           searchQuery={
             atSymbolPosition !== -1 
               ? value.substring(atSymbolPosition + 1).split(' ')[0]
               : ''
           }
+          selectedIndex={selectedContactIndex}
+          onSelectedIndexChange={handleSelectedIndexChange}
         />
       )}
     </>

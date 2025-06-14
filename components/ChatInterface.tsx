@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { ChatArea } from './ChatArea';
+import { useToast } from './ToastProvider';
 
 interface ChatInterfaceProps {
   chatId?: string;
@@ -11,6 +12,7 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [messages, setMessages] = useState<Array<{
@@ -23,6 +25,25 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
 
   // Check if we're on the home page (no chatId)
   const isHomePage = !currentChatId;
+
+  // Demo toast notification - simulate receiving crypto
+  useEffect(() => {
+    // Show a demo toast after 3 seconds on home page
+    if (isHomePage) {
+      const timer = setTimeout(() => {
+        showToast({
+          type: 'crypto-received',
+          title: 'Crypto Received!',
+          message: 'You have received Ethereum',
+          amount: '$10.00',
+          currency: 'ETH',
+          transactionId: 'demo-tx-' + Date.now()
+        });
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isHomePage, showToast]);
 
   const handleSendMessage = (content: string) => {
     let activeChatId = currentChatId;
