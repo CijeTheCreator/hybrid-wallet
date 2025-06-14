@@ -99,10 +99,14 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   return (
     <div className="flex h-screen bg-gray-50 relative">
       {/* Global Blur Overlay - only on home page when input is focused */}
-      {isHomePage && isInputFocused && (
-        <div className="fixed inset-0 z-40 pointer-events-none">
-          <div className="absolute inset-0 backdrop-blur-md bg-white/20" />
-        </div>
+      {isHomePage && (
+        <div 
+          className={`fixed inset-0 z-40 pointer-events-none transition-all duration-500 ease-out ${
+            isInputFocused 
+              ? 'opacity-100 backdrop-blur-md bg-white/20' 
+              : 'opacity-0 backdrop-blur-none bg-transparent'
+          }`}
+        />
       )}
 
       <Sidebar 
