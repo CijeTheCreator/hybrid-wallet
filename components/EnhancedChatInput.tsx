@@ -264,7 +264,7 @@ export function EnhancedChatInput({
           {/* Highlighted Text Overlay */}
           <div
             ref={overlayRef}
-            className="absolute inset-0 p-4 pr-16 pointer-events-none whitespace-pre-wrap break-words overflow-auto z-10"
+            className="absolute inset-0 p-4 pr-16 pointer-events-none whitespace-pre-wrap break-words overflow-auto z-20"
             style={{
               // Use identical font properties as textarea
               fontFamily: 'inherit',
@@ -329,7 +329,7 @@ export function EnhancedChatInput({
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
-            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-20"
+            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-10"
             style={{ 
               caretColor: 'black',
               color: 'transparent',
@@ -343,8 +343,10 @@ export function EnhancedChatInput({
               textIndent: 'inherit',
               // Critical: Match overlay's text rendering
               textSizeAdjust: 'none',
-              WebkitTextSizeAdjust: 'none'
-            }}
+              WebkitTextSizeAdjust: 'none',
+              // Make the caret more visible
+              mixBlendMode: 'difference'
+            }}}
           />
 
           {/* Action Buttons */}
