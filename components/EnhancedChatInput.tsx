@@ -314,6 +314,10 @@ export function EnhancedChatInput({
             onBlur={handleBlur}
             placeholder={placeholder}
             rows={rows}
+            spellCheck={false}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
             className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-0"
             style={{ 
               caretColor: 'black',
