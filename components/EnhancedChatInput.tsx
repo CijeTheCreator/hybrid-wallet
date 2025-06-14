@@ -256,12 +256,21 @@ export function EnhancedChatInput({
           <div
             className="absolute inset-0 p-4 pr-16 pointer-events-none whitespace-pre-wrap break-words overflow-hidden z-10"
             style={{
-              font: 'inherit',
-              fontSize: 'inherit',
+              // Use identical font properties as textarea
               fontFamily: 'inherit',
+              fontSize: 'inherit',
+              fontWeight: 'inherit',
               lineHeight: 'inherit',
               letterSpacing: 'inherit',
-              wordSpacing: 'inherit'
+              wordSpacing: 'inherit',
+              textIndent: 'inherit',
+              // Critical: Match textarea's text rendering
+              textSizeAdjust: 'none',
+              WebkitTextSizeAdjust: 'none',
+              // Ensure consistent box model
+              border: '1px solid transparent', // Match textarea border width
+              borderRadius: '0.75rem', // Match textarea border radius (rounded-xl)
+              boxSizing: 'border-box'
             }}
           >
             {highlightedSegments.map((segment, index) => (
@@ -269,15 +278,25 @@ export function EnhancedChatInput({
                 key={index}
                 className={segment.type !== 'normal' ? HIGHLIGHT_COLORS[segment.type] : HIGHLIGHT_COLORS.normal}
                 style={{
-                  // Remove any padding/margin that could cause shifts
-                  padding: segment.type !== 'normal' ? '1px 2px' : '0',
-                  margin: '0',
-                  borderRadius: segment.type !== 'normal' ? '3px' : '0',
-                  // Ensure consistent line height
-                  lineHeight: 'inherit',
-                  // Prevent any layout shifts
+                  // Consistent inline styling for all segments
                   display: 'inline',
-                  verticalAlign: 'baseline'
+                  padding: '0', // Remove all padding to prevent shifts
+                  margin: '0',
+                  border: 'none',
+                  borderRadius: '0', // Remove border radius to prevent text flow issues
+                  verticalAlign: 'baseline',
+                  // Use background-color instead of className bg for highlighted text
+                  backgroundColor: segment.type !== 'normal' ? (
+                    segment.type === 'action' ? '#fce7f3' :
+                    segment.type === 'blockchain' || segment.type === 'currency' ? '#fef3c7' :
+                    '#dbeafe'
+                  ) : 'transparent',
+                  // Keep the text color
+                  color: segment.type !== 'normal' ? (
+                    segment.type === 'action' ? '#be185d' :
+                    segment.type === 'blockchain' || segment.type === 'currency' ? '#92400e' :
+                    '#1e40af'
+                  ) : '#111827'
                 }}
               >
                 {segment.text}
@@ -300,12 +319,16 @@ export function EnhancedChatInput({
               caretColor: 'black',
               color: 'transparent',
               // Ensure consistent font properties
-              font: 'inherit',
-              fontSize: 'inherit',
               fontFamily: 'inherit',
+              fontSize: 'inherit',
+              fontWeight: 'inherit',
               lineHeight: 'inherit',
               letterSpacing: 'inherit',
-              wordSpacing: 'inherit'
+              wordSpacing: 'inherit',
+              textIndent: 'inherit',
+              // Critical: Match overlay's text rendering
+              textSizeAdjust: 'none',
+              WebkitTextSizeAdjust: 'none'
             }}
           />
 
