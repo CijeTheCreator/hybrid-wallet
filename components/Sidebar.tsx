@@ -90,12 +90,15 @@ export function Sidebar({ expanded, onToggle, onNewChat, currentChatId }: Sideba
         "p-3 border-b border-gray-100",
         !expanded && "flex justify-center"
       )}>
-        <button className={cn(
-          "flex items-center hover:bg-gray-100 transition-colors",
-          expanded 
-            ? "w-full space-x-3 p-2 rounded-lg" 
-            : "w-8 h-8 justify-center rounded-lg"
-        )}>
+        <button 
+          onClick={() => window.location.href = '/transactions'}
+          className={cn(
+            "flex items-center hover:bg-gray-100 transition-colors",
+            expanded 
+              ? "w-full space-x-3 p-2 rounded-lg" 
+              : "w-8 h-8 justify-center rounded-lg"
+          )}
+        >
           <Receipt className="w-4 h-4 flex-shrink-0 text-gray-600" />
           {expanded && <span className="text-sm text-gray-700">Transactions</span>}
         </button>
