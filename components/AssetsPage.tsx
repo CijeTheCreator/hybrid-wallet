@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, Wallet, TrendingUp, DollarSign, Activity } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { TokenContextMenu } from './TokenContextMenu';
@@ -40,8 +40,7 @@ export function AssetsPage() {
   const [hoveredToken, setHoveredToken] = useState<Token | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isMouseOverMenu, setIsMouseOverMenu] = useState(false);
-  const [isMenuAnimating, setIsMenuAnimating] = useState(false);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
 
   // Mock token data
   const tokens: Token[] = [
@@ -147,7 +146,6 @@ export function AssetsPage() {
   const totalPortfolioValue = tokens.reduce((sum, token) => sum + token.totalValue, 0);
   const totalTokens = tokens.length;
   const totalNFTs = nfts.length;
-  const portfolioChange24h = tokens.reduce((sum, token) => sum + (token.totalValue * token.change24h / 100), 0);
 
   const filteredTokens = tokens.filter(token =>
     token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -163,30 +161,18 @@ export function AssetsPage() {
     window.location.href = '/';
   };
 
-  const clearHideTimeout = () => {
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
-  };
-
   const handleTokenMouseEnter = (token: Token, event: React.MouseEvent) => {
-    clearHideTimeout();
     setHoveredToken(token);
     setMousePosition({ x: event.clientX, y: event.clientY });
-    setIsMenuAnimating(true);
-    
-    setTimeout(() => {
-      setIsMenuAnimating(false);
-    }, 200);
   };
 
   const handleTokenMouseLeave = () => {
-    hideTimeoutRef.current = setTimeout(() => {
-      if (!isMouseOverMenu && !isMenuAnimating) {
+    // Small delay to allow mouse to move to context menu
+    setTimeout(() => {
+      if (!isMouseOverMenu) {
         setHoveredToken(null);
       }
-    }, 50);
+    }, 100);
   };
 
   const handleTokenMouseMove = (event: React.MouseEvent) => {
@@ -196,7 +182,6 @@ export function AssetsPage() {
   };
 
   const handleMenuMouseEnter = () => {
-    clearHideTimeout();
     setIsMouseOverMenu(true);
   };
 
@@ -204,6 +189,24 @@ export function AssetsPage() {
     setIsMouseOverMenu(false);
     setHoveredToken(null);
   };
+
+  // Handle click outside to close context menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(event.target as Node)) {
+        setHoveredToken(null);
+        setIsMouseOverMenu(false);
+      }
+    };
+
+    if (hoveredToken) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [hoveredToken]);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -224,7 +227,7 @@ export function AssetsPage() {
               </h1>
               
               {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white rounded-lg p-6 border border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
@@ -232,9 +235,7 @@ export function AssetsPage() {
                       <p className="text-2xl font-bold text-gray-900">
                         ${totalPortfolioValue.toLocaleString()}
                       </p>
-                      <p className={`text-sm ${portfolioChange24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {portfolioChange24h >= 0 ? '+' : ''}${portfolioChange24h.toFixed(2)} (24h)
-                      </p>
+                      <p className="text-sm text-gray-500">Portfolio value</p>
                     </div>
                     <div className="p-3 bg-blue-100 rounded-full">
                       <Wallet className="w-6 h-6 text-blue-600" />
@@ -264,21 +265,6 @@ export function AssetsPage() {
                     </div>
                     <div className="p-3 bg-purple-100 rounded-full">
                       <Activity className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-lg p-6 border border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">24h Change</p>
-                      <p className={`text-2xl font-bold ${portfolioChange24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {portfolioChange24h >= 0 ? '+' : ''}{((portfolioChange24h / totalPortfolioValue) * 100).toFixed(2)}%
-                      </p>
-                      <p className="text-sm text-gray-500">Portfolio performance</p>
-                    </div>
-                    <div className={`p-3 rounded-full ${portfolioChange24h >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
-                      <TrendingUp className={`w-6 h-6 ${portfolioChange24h >= 0 ? 'text-green-600' : 'text-red-600'}`} />
                     </div>
                   </div>
                 </div>
@@ -355,14 +341,6 @@ export function AssetsPage() {
                               ${token.totalValue.toLocaleString()}
                             </p>
                           </div>
-                          <div>
-                            <p className="text-sm text-gray-500">24h Change</p>
-                            <p className={`font-medium ${
-                              token.change24h >= 0 ? 'text-green-600' : 'text-red-600'
-                            }`}>
-                              {token.change24h >= 0 ? '+' : ''}{token.change24h}%
-                            </p>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -424,12 +402,14 @@ export function AssetsPage() {
 
       {/* Token Context Menu */}
       {hoveredToken && (
-        <TokenContextMenu
-          token={hoveredToken}
-          position={mousePosition}
-          onMouseEnter={handleMenuMouseEnter}
-          onMouseLeave={handleMenuMouseLeave}
-        />
+        <div ref={contextMenuRef}>
+          <TokenContextMenu
+            token={hoveredToken}
+            position={mousePosition}
+            onMouseEnter={handleMenuMouseEnter}
+            onMouseLeave={handleMenuMouseLeave}
+          />
+        </div>
       )}
     </div>
   );

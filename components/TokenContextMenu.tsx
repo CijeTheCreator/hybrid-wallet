@@ -274,11 +274,6 @@ export function TokenContextMenu({ token, position, onMouseEnter, onMouseLeave }
                 <span className="font-medium text-gray-900">
                   ${token.price.toLocaleString()}
                 </span>
-                <span className={`ml-2 text-xs ${
-                  token.change24h >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {token.change24h >= 0 ? '+' : ''}{token.change24h}%
-                </span>
               </div>
             </div>
           </div>
