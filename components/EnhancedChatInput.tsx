@@ -21,7 +21,6 @@ interface EnhancedChatInputProps {
   rows?: number;
   onFocus?: () => void;
   onBlur?: () => void;
-  isFocused?: boolean;
 }
 
 interface HighlightedSegment {
@@ -55,8 +54,7 @@ export function EnhancedChatInput({
   placeholder = "Type your message...",
   rows = 2,
   onFocus,
-  onBlur,
-  isFocused = false
+  onBlur
 }: EnhancedChatInputProps) {
   const [showContacts, setShowContacts] = useState(false);
   const [contactsPosition, setContactsPosition] = useState({ x: 0, y: 0 });
@@ -101,7 +99,6 @@ export function EnhancedChatInput({
     if (!value) return [];
 
     const segments: HighlightedSegment[] = [];
-    const text = value.toLowerCase();
     let currentIndex = 0;
 
     // Create regex patterns for different types
@@ -264,8 +261,7 @@ export function EnhancedChatInput({
               letterSpacing: 'inherit',
               wordSpacing: 'inherit',
               fontSize: 'inherit',
-              fontFamily: 'inherit',
-              color: 'transparent'
+              fontFamily: 'inherit'
             }}
           >
             {highlightedSegments.map((segment, index) => (
@@ -274,6 +270,9 @@ export function EnhancedChatInput({
                 className={`${HIGHLIGHT_COLORS[segment.type]} ${
                   segment.type !== 'normal' ? 'px-1 py-0.5 rounded-md' : ''
                 }`}
+                style={{
+                  color: segment.type === 'normal' ? 'transparent' : undefined
+                }}
               >
                 {segment.text}
               </span>
@@ -293,7 +292,7 @@ export function EnhancedChatInput({
             className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-10"
             style={{ 
               caretColor: 'black',
-              color: 'black'
+              color: 'transparent'
             }}
           />
 
