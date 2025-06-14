@@ -254,23 +254,22 @@ export function EnhancedChatInput({
         <div ref={containerRef} className="relative">
           {/* Highlighted Text Overlay */}
           <div
-            className="absolute inset-0 p-4 pr-16 pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
+            className="absolute inset-0 p-4 pr-16 pointer-events-none whitespace-pre-wrap break-words overflow-hidden z-10"
             style={{
-              font: 'inherit',
-              lineHeight: 'inherit',
-              letterSpacing: 'inherit',
-              wordSpacing: 'inherit',
-              fontSize: 'inherit',
-              fontFamily: 'inherit'
+              font: textareaRef.current?.style.font || 'inherit',
+              fontSize: textareaRef.current?.style.fontSize || 'inherit',
+              fontFamily: textareaRef.current?.style.fontFamily || 'inherit',
+              lineHeight: textareaRef.current?.style.lineHeight || 'inherit',
+              letterSpacing: textareaRef.current?.style.letterSpacing || 'inherit',
+              wordSpacing: textareaRef.current?.style.wordSpacing || 'inherit'
             }}
           >
             {highlightedSegments.map((segment, index) => (
               <span
                 key={index}
-                className={`${HIGHLIGHT_COLORS[segment.type]} ${
-                  segment.type !== 'normal' ? 'px-1 py-0.5 rounded-md' : ''
-                }`}
+                className={segment.type !== 'normal' ? `${HIGHLIGHT_COLORS[segment.type]} px-1 py-0.5 rounded-md` : ''}
                 style={{
+                  backgroundColor: segment.type === 'normal' ? 'transparent' : undefined,
                   color: segment.type === 'normal' ? 'transparent' : undefined
                 }}
               >
@@ -289,7 +288,7 @@ export function EnhancedChatInput({
             onBlur={handleBlur}
             placeholder={placeholder}
             rows={rows}
-            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-10"
+            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-0"
             style={{ 
               caretColor: 'black',
               color: 'transparent'
