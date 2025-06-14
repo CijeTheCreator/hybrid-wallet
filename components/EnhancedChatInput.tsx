@@ -346,7 +346,7 @@ export function EnhancedChatInput({
               WebkitTextSizeAdjust: 'none',
               // Make the caret more visible
               mixBlendMode: 'difference'
-            }}}
+            }}
           />
 
           {/* Action Buttons */}
@@ -393,4 +393,4 @@ export function EnhancedChatInput({
       )}
     </>
   );
-} 
+}
