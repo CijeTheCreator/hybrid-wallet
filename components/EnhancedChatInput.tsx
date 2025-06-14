@@ -256,20 +256,29 @@ export function EnhancedChatInput({
           <div
             className="absolute inset-0 p-4 pr-16 pointer-events-none whitespace-pre-wrap break-words overflow-hidden z-10"
             style={{
-              font: textareaRef.current?.style.font || 'inherit',
-              fontSize: textareaRef.current?.style.fontSize || 'inherit',
-              fontFamily: textareaRef.current?.style.fontFamily || 'inherit',
-              lineHeight: textareaRef.current?.style.lineHeight || 'inherit',
-              letterSpacing: textareaRef.current?.style.letterSpacing || 'inherit',
-              wordSpacing: textareaRef.current?.style.wordSpacing || 'inherit'
+              font: 'inherit',
+              fontSize: 'inherit',
+              fontFamily: 'inherit',
+              lineHeight: 'inherit',
+              letterSpacing: 'inherit',
+              wordSpacing: 'inherit'
             }}
           >
             {highlightedSegments.map((segment, index) => (
               <span
                 key={index}
-                className={`${HIGHLIGHT_COLORS[segment.type]} ${
-                  segment.type !== 'normal' ? 'px-1 py-0.5 rounded-md' : ''
-                }`}
+                className={segment.type !== 'normal' ? HIGHLIGHT_COLORS[segment.type] : HIGHLIGHT_COLORS.normal}
+                style={{
+                  // Remove any padding/margin that could cause shifts
+                  padding: segment.type !== 'normal' ? '1px 2px' : '0',
+                  margin: '0',
+                  borderRadius: segment.type !== 'normal' ? '3px' : '0',
+                  // Ensure consistent line height
+                  lineHeight: 'inherit',
+                  // Prevent any layout shifts
+                  display: 'inline',
+                  verticalAlign: 'baseline'
+                }}
               >
                 {segment.text}
               </span>
@@ -289,7 +298,14 @@ export function EnhancedChatInput({
             className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-0"
             style={{ 
               caretColor: 'black',
-              color: 'transparent'
+              color: 'transparent',
+              // Ensure consistent font properties
+              font: 'inherit',
+              fontSize: 'inherit',
+              fontFamily: 'inherit',
+              lineHeight: 'inherit',
+              letterSpacing: 'inherit',
+              wordSpacing: 'inherit'
             }}
           />
 
