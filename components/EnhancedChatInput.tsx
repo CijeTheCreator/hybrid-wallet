@@ -44,7 +44,7 @@ const HIGHLIGHT_COLORS = {
   currency: 'bg-yellow-100 text-yellow-800',
   contact: 'bg-blue-100 text-blue-800',
   address: 'bg-blue-100 text-blue-800',
-  normal: ''
+  normal: 'text-gray-900'
 };
 
 export function EnhancedChatInput({
@@ -267,11 +267,9 @@ export function EnhancedChatInput({
             {highlightedSegments.map((segment, index) => (
               <span
                 key={index}
-                className={segment.type !== 'normal' ? `${HIGHLIGHT_COLORS[segment.type]} px-1 py-0.5 rounded-md` : ''}
-                style={{
-                  backgroundColor: segment.type === 'normal' ? 'transparent' : undefined,
-                  color: segment.type === 'normal' ? 'transparent' : undefined
-                }}
+                className={`${HIGHLIGHT_COLORS[segment.type]} ${
+                  segment.type !== 'normal' ? 'px-1 py-0.5 rounded-md' : ''
+                }`}
               >
                 {segment.text}
               </span>
