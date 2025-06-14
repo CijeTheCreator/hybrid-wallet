@@ -329,7 +329,7 @@ export function EnhancedChatInput({
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
-            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-0"
+            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-20"
             style={{ 
               caretColor: 'black',
               color: 'transparent',
@@ -348,7 +348,7 @@ export function EnhancedChatInput({
           />
 
           {/* Action Buttons */}
-          <div className="absolute bottom-4 right-4 flex items-center space-x-2 z-20">
+          <div className="absolute bottom-4 right-4 flex items-center space-x-2 z-30">
             <button
               type="button"
               className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
