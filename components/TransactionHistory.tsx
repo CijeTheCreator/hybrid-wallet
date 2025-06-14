@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { TransactionContextMenu } from './TransactionContextMenu';
@@ -27,6 +27,8 @@ export function TransactionHistory() {
   const [hoveredTransaction, setHoveredTransaction] = useState<Transaction | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isMouseOverMenu, setIsMouseOverMenu] = useState(false);
+  const [isMenuAnimating, setIsMenuAnimating] = useState(false);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Mock transaction data with breakdown
   const transactions: Transaction[] = [
@@ -160,16 +162,32 @@ export function TransactionHistory() {
     window.location.href = '/';
   };
 
+  const clearHideTimeout = () => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+  };
+
   const handleMouseEnter = (transaction: Transaction, event: React.MouseEvent) => {
+    clearHideTimeout();
     setHoveredTransaction(transaction);
     setMousePosition({ x: event.clientX, y: event.clientY });
+    setIsMenuAnimating(true);
+    
+    // Animation completes after 200ms (duration-200)
+    setTimeout(() => {
+      setIsMenuAnimating(false);
+    }, 200);
   };
 
   const handleMouseLeave = () => {
-    // Only hide if mouse is not over the context menu
-    if (!isMouseOverMenu) {
-      setHoveredTransaction(null);
-    }
+    // Set a small delay before hiding to allow mouse to move to context menu
+    hideTimeoutRef.current = setTimeout(() => {
+      if (!isMouseOverMenu && !isMenuAnimating) {
+        setHoveredTransaction(null);
+      }
+    }, 50);
   };
 
   const handleMouseMove = (event: React.MouseEvent) => {
@@ -179,11 +197,13 @@ export function TransactionHistory() {
   };
 
   const handleMenuMouseEnter = () => {
+    clearHideTimeout();
     setIsMouseOverMenu(true);
   };
 
   const handleMenuMouseLeave = () => {
     setIsMouseOverMenu(false);
+    // Hide immediately when leaving the menu
     setHoveredTransaction(null);
   };
 
