@@ -6,7 +6,8 @@ import {
   Receipt, 
   PanelLeftClose, 
   PanelLeftOpen,
-  MoreHorizontal 
+  MoreHorizontal,
+  Wallet
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserDropdown } from './UserDropdown';
@@ -85,11 +86,12 @@ export function Sidebar({ expanded, onToggle, onNewChat, currentChatId }: Sideba
         </button>
       </div>
 
-      {/* Transactions Section */}
+      {/* Navigation Sections */}
       <div className={cn(
-        "p-3 border-b border-gray-100",
-        !expanded && "flex justify-center"
+        "p-3 border-b border-gray-100 space-y-2",
+        !expanded && "flex flex-col items-center space-y-2"
       )}>
+        {/* Transactions */}
         <button 
           onClick={() => window.location.href = '/transactions'}
           className={cn(
@@ -101,6 +103,20 @@ export function Sidebar({ expanded, onToggle, onNewChat, currentChatId }: Sideba
         >
           <Receipt className="w-4 h-4 flex-shrink-0 text-gray-600" />
           {expanded && <span className="text-sm text-gray-700">Transactions</span>}
+        </button>
+
+        {/* Assets */}
+        <button 
+          onClick={() => window.location.href = '/assets'}
+          className={cn(
+            "flex items-center hover:bg-gray-100 transition-colors",
+            expanded 
+              ? "w-full space-x-3 p-2 rounded-lg" 
+              : "w-8 h-8 justify-center rounded-lg"
+          )}
+        >
+          <Wallet className="w-4 h-4 flex-shrink-0 text-gray-600" />
+          {expanded && <span className="text-sm text-gray-700">Assets</span>}
         </button>
       </div>
 
