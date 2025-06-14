@@ -60,6 +60,7 @@ export function EnhancedChatInput({
   const [contactsPosition, setContactsPosition] = useState({ x: 0, y: 0 });
   const [atSymbolPosition, setAtSymbolPosition] = useState(-1);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Mock contacts data
@@ -248,13 +249,22 @@ export function EnhancedChatInput({
     }, 150);
   };
 
+  // Sync overlay scroll with textarea scroll
+  const handleScroll = () => {
+    if (textareaRef.current && overlayRef.current) {
+      overlayRef.current.scrollTop = textareaRef.current.scrollTop;
+      overlayRef.current.scrollLeft = textareaRef.current.scrollLeft;
+    }
+  };
+
   return (
     <>
       <form onSubmit={handleSubmit} className="relative">
         <div ref={containerRef} className="relative">
           {/* Highlighted Text Overlay */}
           <div
-            className="absolute inset-0 p-4 pr-16 pointer-events-none whitespace-pre-wrap break-words overflow-hidden z-10"
+            ref={overlayRef}
+            className="absolute inset-0 p-4 pr-16 pointer-events-none whitespace-pre-wrap break-words overflow-auto z-10"
             style={{
               // Use identical font properties as textarea
               fontFamily: 'inherit',
@@ -312,6 +322,7 @@ export function EnhancedChatInput({
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            onScroll={handleScroll}
             placeholder={placeholder}
             rows={rows}
             spellCheck={false}
