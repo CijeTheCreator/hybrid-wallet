@@ -17,11 +17,12 @@ interface ChatAreaProps {
   messages: Message[];
   onSendMessage: (content: string) => void;
   isHomePage?: boolean;
+  onInputFocus?: () => void;
+  onInputBlur?: () => void;
 }
 
-export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAreaProps) {
+export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputFocus, onInputBlur }: ChatAreaProps) {
   const [input, setInput] = useState('');
-  const [isInputFocused, setIsInputFocused] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -50,15 +51,8 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAr
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex flex-col relative">
-        {/* Blur Overlay */}
-        {isInputFocused && (
-          <div className="absolute inset-0 z-10 pointer-events-none">
-            <div className="absolute inset-0 backdrop-blur-md bg-white/20" />
-          </div>
-        )}
-
         <div className="flex-1 flex items-center justify-center">
-          <div className="max-w-2xl w-full px-6 relative z-20">
+          <div className="max-w-2xl w-full px-6">
             <div className="text-center mb-8">
               {/* Account Switcher */}
               <div className="flex justify-center mb-4">
@@ -70,21 +64,20 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAr
               </h1>
             </div>
 
-            <div className="mb-8 relative z-30">
+            <div className="mb-8 relative z-50">
               <EnhancedChatInput
                 value={input}
                 onChange={setInput}
                 onSubmit={handleSubmit}
                 placeholder="How can I help you today?"
                 rows={3}
-                onFocus={() => setIsInputFocused(true)}
-                onBlur={() => setIsInputFocused(false)}
-                isFocused={isInputFocused}
+                onFocus={onInputFocus}
+                onBlur={onInputBlur}
               />
             </div>
 
             {isHomePage && (
-              <div className="flex flex-wrap gap-3 justify-center relative z-30">
+              <div className="flex flex-wrap gap-3 justify-center">
                 {quickActions.map((action, index) => (
                   <button
                     key={index}

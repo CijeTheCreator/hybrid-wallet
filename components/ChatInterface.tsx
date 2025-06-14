@@ -12,6 +12,7 @@ interface ChatInterfaceProps {
 export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const router = useRouter();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const [messages, setMessages] = useState<Array<{
     id: string;
     content: string;
@@ -96,7 +97,14 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   }, [chatId, currentChatId]);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 relative">
+      {/* Global Blur Overlay - only on home page when input is focused */}
+      {isHomePage && isInputFocused && (
+        <div className="fixed inset-0 z-40 pointer-events-none">
+          <div className="absolute inset-0 backdrop-blur-md bg-white/20" />
+        </div>
+      )}
+
       <Sidebar 
         expanded={sidebarExpanded} 
         onToggle={() => setSidebarExpanded(!sidebarExpanded)}
@@ -109,6 +117,8 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
           messages={messages} 
           onSendMessage={handleSendMessage}
           isHomePage={isHomePage}
+          onInputFocus={() => setIsInputFocused(true)}
+          onInputBlur={() => setIsInputFocused(false)}
         />
       </div>
     </div>
