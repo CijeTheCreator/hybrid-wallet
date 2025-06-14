@@ -53,21 +53,7 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAr
         {/* Blur Overlay */}
         {isInputFocused && (
           <div className="absolute inset-0 z-10 pointer-events-none">
-            <div 
-              className="absolute inset-0 backdrop-blur-sm bg-white/30 transition-all duration-300"
-              style={{
-                maskImage: `
-                  radial-gradient(ellipse at center bottom, transparent 0%, transparent 25%, black 60%),
-                  linear-gradient(to bottom, black 0%, black 70%, transparent 100%)
-                `,
-                WebkitMaskImage: `
-                  radial-gradient(ellipse at center bottom, transparent 0%, transparent 25%, black 60%),
-                  linear-gradient(to bottom, black 0%, black 70%, transparent 100%)
-                `,
-                maskComposite: 'intersect',
-                WebkitMaskComposite: 'source-in'
-              }}
-            />
+            <div className="absolute inset-0 backdrop-blur-md bg-white/20" />
           </div>
         )}
 
@@ -84,7 +70,7 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAr
               </h1>
             </div>
 
-            <div className="mb-8">
+            <div className="mb-8 relative z-30">
               <EnhancedChatInput
                 value={input}
                 onChange={setInput}
@@ -98,12 +84,7 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false }: ChatAr
             </div>
 
             {isHomePage && (
-              <div 
-                className={cn(
-                  "flex flex-wrap gap-3 justify-center transition-all duration-300 relative z-20",
-                  isInputFocused ? "opacity-100" : "opacity-100"
-                )}
-              >
+              <div className="flex flex-wrap gap-3 justify-center relative z-30">
                 {quickActions.map((action, index) => (
                   <button
                     key={index}

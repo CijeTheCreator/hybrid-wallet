@@ -257,12 +257,15 @@ export function EnhancedChatInput({
         <div ref={containerRef} className="relative">
           {/* Highlighted Text Overlay */}
           <div
-            className="absolute inset-0 p-4 pr-16 pointer-events-none whitespace-pre-wrap break-words text-transparent overflow-hidden"
+            className="absolute inset-0 p-4 pr-16 pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
             style={{
               font: 'inherit',
               lineHeight: 'inherit',
               letterSpacing: 'inherit',
-              wordSpacing: 'inherit'
+              wordSpacing: 'inherit',
+              fontSize: 'inherit',
+              fontFamily: 'inherit',
+              color: 'transparent'
             }}
           >
             {highlightedSegments.map((segment, index) => (
@@ -287,8 +290,11 @@ export function EnhancedChatInput({
             onBlur={handleBlur}
             placeholder={placeholder}
             rows={rows}
-            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-transparent relative z-10"
-            style={{ caretColor: 'black' }}
+            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-10"
+            style={{ 
+              caretColor: 'black',
+              color: 'black'
+            }}
           />
 
           {/* Action Buttons */}

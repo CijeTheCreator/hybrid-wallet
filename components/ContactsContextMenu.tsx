@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import { AtSign, Circle } from 'lucide-react';
 
 interface Contact {
   id: string;
@@ -39,8 +38,8 @@ export function ContactsContextMenu({
   }, [contacts, searchQuery]);
 
   // Calculate optimal positioning
-  const menuWidth = 320;
-  const menuMaxHeight = 300;
+  const menuWidth = 280;
+  const menuMaxHeight = 240;
   const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
   const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
   
@@ -81,14 +80,6 @@ export function ContactsContextMenu({
         style={menuStyle}
         className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200 z-50"
       >
-        {/* Header */}
-        <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
-          <div className="flex items-center space-x-2">
-            <AtSign className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Select Contact</span>
-          </div>
-        </div>
-
         {/* Contacts List */}
         <div className="max-h-60 overflow-y-auto">
           {filteredContacts.length > 0 ? (
@@ -101,34 +92,19 @@ export function ContactsContextMenu({
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   {/* Avatar */}
-                  <div className="relative flex-shrink-0">
-                    <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center">
                       <span className="text-white font-medium text-sm">
                         {contact.name.charAt(0).toUpperCase()}
                       </span>
-                    </div>
-                    {/* Online Status */}
-                    <div className="absolute -bottom-0.5 -right-0.5">
-                      <Circle
-                        className={`w-3 h-3 ${
-                          contact.isOnline ? 'text-green-500 fill-current' : 'text-gray-300 fill-current'
-                        }`}
-                      />
                     </div>
                   </div>
 
                   {/* Contact Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <p className="font-medium text-gray-900 truncate">
-                        {contact.name}
-                      </p>
-                      {contact.isOnline && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Online
-                        </span>
-                      )}
-                    </div>
+                    <p className="font-medium text-gray-900 truncate text-sm">
+                      {contact.name}
+                    </p>
                     <p className="text-sm text-gray-500 truncate">
                       @{contact.username}
                     </p>
@@ -141,7 +117,6 @@ export function ContactsContextMenu({
             </div>
           ) : (
             <div className="py-8 text-center">
-              <AtSign className="w-8 h-8 text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-500">
                 {searchQuery ? `No contacts found for "${searchQuery}"` : 'No contacts available'}
               </p>
