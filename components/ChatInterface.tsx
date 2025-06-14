@@ -18,16 +18,20 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     role: 'user' | 'assistant';
     thinking?: boolean;
   }>>([]);
+  const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
 
   // Check if we're on the home page (no chatId)
-  const isHomePage = !chatId;
+  const isHomePage = !currentChatId;
 
   const handleSendMessage = (content: string) => {
-    // If we're on the home page, create a new chat and navigate to it
+    let activeChatId = currentChatId;
+    
+    // If we're on the home page, create a new chat ID and update URL
     if (isHomePage) {
-      const newChatId = generateChatId();
-      router.push(`/chats/${newChatId}`);
-      return;
+      activeChatId = generateChatId();
+      setCurrentChatId(activeChatId);
+      // Update URL without navigation
+      window.history.pushState({}, '', `/chats/${activeChatId}`);
     }
 
     const userMessage = {
@@ -62,6 +66,8 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   };
 
   const handleNewChat = () => {
+    setMessages([]);
+    setCurrentChatId(undefined);
     router.push('/');
   };
 
@@ -81,12 +87,13 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
 
   // Load messages for existing chat (in a real app, this would fetch from an API)
   useEffect(() => {
-    if (chatId && !isHomePage) {
+    if (chatId && chatId !== currentChatId) {
+      setCurrentChatId(chatId);
       // In a real application, you would fetch messages for this chatId
       // For now, we'll just ensure messages are empty for new chats
       setMessages([]);
     }
-  }, [chatId, isHomePage]);
+  }, [chatId, currentChatId]);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -94,7 +101,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
         expanded={sidebarExpanded} 
         onToggle={() => setSidebarExpanded(!sidebarExpanded)}
         onNewChat={handleNewChat}
-        currentChatId={chatId}
+        currentChatId={currentChatId}
       />
       
       <div className="flex-1 flex flex-col">
