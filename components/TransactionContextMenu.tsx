@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 interface TransactionBreakdown {
   send: number;
@@ -23,6 +23,8 @@ interface Transaction {
 interface TransactionContextMenuProps {
   transaction: Transaction;
   position: { x: number; y: number };
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
 }
 
 interface PieSlice {
@@ -52,7 +54,9 @@ const LABELS = {
   bridge: 'Bridge'
 };
 
-export function TransactionContextMenu({ transaction, position }: TransactionContextMenuProps) {
+export function TransactionContextMenu({ transaction, position, onMouseEnter, onMouseLeave }: TransactionContextMenuProps) {
+  const [hoveredSlice, setHoveredSlice] = useState<string | null>(null);
+
   const pieData = useMemo(() => {
     const total = Object.values(transaction.breakdown).reduce((sum, value) => sum + value, 0);
     
@@ -82,18 +86,19 @@ export function TransactionContextMenu({ transaction, position }: TransactionCon
     return slices;
   }, [transaction.breakdown]);
 
-  const createPieSlicePath = (slice: PieSlice, radius: number, centerX: number, centerY: number) => {
+  const createPieSlicePath = (slice: PieSlice, radius: number, centerX: number, centerY: number, isHovered: boolean = false) => {
+    const expandedRadius = isHovered ? radius + 3 : radius;
     const startAngleRad = (slice.startAngle * Math.PI) / 180;
     const endAngleRad = (slice.endAngle * Math.PI) / 180;
     
-    const x1 = centerX + radius * Math.cos(startAngleRad);
-    const y1 = centerY + radius * Math.sin(startAngleRad);
-    const x2 = centerX + radius * Math.cos(endAngleRad);
-    const y2 = centerY + radius * Math.sin(endAngleRad);
+    const x1 = centerX + expandedRadius * Math.cos(startAngleRad);
+    const y1 = centerY + expandedRadius * Math.sin(startAngleRad);
+    const x2 = centerX + expandedRadius * Math.cos(endAngleRad);
+    const y2 = centerY + expandedRadius * Math.sin(endAngleRad);
     
     const largeArcFlag = slice.endAngle - slice.startAngle > 180 ? 1 : 0;
     
-    return `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+    return `M ${centerX} ${centerY} L ${x1} ${y1} A ${expandedRadius} ${expandedRadius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
   };
 
   // Position the menu to avoid going off-screen
@@ -108,6 +113,8 @@ export function TransactionContextMenu({ transaction, position }: TransactionCon
     <div
       style={menuStyle}
       className="bg-white rounded-lg shadow-xl border border-gray-200 p-6 w-80 animate-in fade-in-0 zoom-in-95 duration-200"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {/* Header */}
       <div className="mb-4">
@@ -123,9 +130,15 @@ export function TransactionContextMenu({ transaction, position }: TransactionCon
           {pieData.map((slice, index) => (
             <path
               key={index}
-              d={createPieSlicePath(slice, 50, 60, 60)}
+              d={createPieSlicePath(slice, 50, 60, 60, hoveredSlice === slice.type)}
               fill={slice.color}
-              className="hover:opacity-80 transition-opacity"
+              className="transition-all duration-200 cursor-pointer"
+              style={{
+                filter: hoveredSlice === slice.type ? 'brightness(1.1)' : 'none',
+                opacity: hoveredSlice && hoveredSlice !== slice.type ? 0.7 : 1
+              }}
+              onMouseEnter={() => setHoveredSlice(slice.type)}
+              onMouseLeave={() => setHoveredSlice(null)}
             />
           ))}
         </svg>
@@ -134,16 +147,28 @@ export function TransactionContextMenu({ transaction, position }: TransactionCon
       {/* Legend */}
       <div className="space-y-2">
         {pieData.map((slice) => (
-          <div key={slice.type} className="flex items-center justify-between text-xs">
+          <div 
+            key={slice.type} 
+            className={`flex items-center justify-between text-xs transition-all duration-200 p-1 rounded ${
+              hoveredSlice === slice.type ? 'bg-gray-50' : ''
+            }`}
+            onMouseEnter={() => setHoveredSlice(slice.type)}
+            onMouseLeave={() => setHoveredSlice(null)}
+          >
             <div className="flex items-center space-x-2">
               <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: slice.color }}
+                className="w-3 h-3 rounded-full transition-transform duration-200"
+                style={{ 
+                  backgroundColor: slice.color,
+                  transform: hoveredSlice === slice.type ? 'scale(1.2)' : 'scale(1)'
+                }}
               />
-              <span className="text-gray-700">{LABELS[slice.type]}</span>
+              <span className={`text-gray-700 ${hoveredSlice === slice.type ? 'font-medium' : ''}`}>
+                {LABELS[slice.type]}
+              </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-gray-900 font-medium">
+              <span className={`text-gray-900 ${hoveredSlice === slice.type ? 'font-bold' : 'font-medium'}`}>
                 ${slice.value.toFixed(2)}
               </span>
               <span className="text-gray-500">

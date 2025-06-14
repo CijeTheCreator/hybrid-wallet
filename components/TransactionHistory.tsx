@@ -26,6 +26,7 @@ export function TransactionHistory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredTransaction, setHoveredTransaction] = useState<Transaction | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isMouseOverMenu, setIsMouseOverMenu] = useState(false);
 
   // Mock transaction data with breakdown
   const transactions: Transaction[] = [
@@ -165,13 +166,25 @@ export function TransactionHistory() {
   };
 
   const handleMouseLeave = () => {
-    setHoveredTransaction(null);
+    // Only hide if mouse is not over the context menu
+    if (!isMouseOverMenu) {
+      setHoveredTransaction(null);
+    }
   };
 
   const handleMouseMove = (event: React.MouseEvent) => {
     if (hoveredTransaction) {
       setMousePosition({ x: event.clientX, y: event.clientY });
     }
+  };
+
+  const handleMenuMouseEnter = () => {
+    setIsMouseOverMenu(true);
+  };
+
+  const handleMenuMouseLeave = () => {
+    setIsMouseOverMenu(false);
+    setHoveredTransaction(null);
   };
 
   return (
@@ -263,6 +276,8 @@ export function TransactionHistory() {
         <TransactionContextMenu
           transaction={hoveredTransaction}
           position={mousePosition}
+          onMouseEnter={handleMenuMouseEnter}
+          onMouseLeave={handleMenuMouseLeave}
         />
       )}
     </div>
