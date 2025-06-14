@@ -23,9 +23,14 @@ export function UserDropdown({ expanded }: UserDropdownProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleSettingsClick = () => {
+    setIsOpen(false);
+    window.location.href = '/settings';
+  };
+
   const menuItems = [
     { icon: User, label: 'Personal', sublabel: 'Free plan', active: true },
-    { icon: Settings, label: 'Settings' },
+    { icon: Settings, label: 'Settings', onClick: handleSettingsClick },
     { icon: HelpCircle, label: 'Language', sublabel: 'BETA', badge: true },
     { icon: HelpCircle, label: 'Get help' },
     { icon: Settings, label: 'Upgrade plan' },
@@ -65,6 +70,7 @@ export function UserDropdown({ expanded }: UserDropdownProps) {
           {menuItems.map((item, index) => (
             <button
               key={index}
+              onClick={item.onClick}
               className={cn(
                 "w-full flex items-center justify-between px-4 py-2 text-left hover:bg-gray-50 transition-colors",
                 item.active && "bg-blue-50"
