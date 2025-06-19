@@ -227,7 +227,7 @@ async function submitUserMessage(content: string): Promise<{
     // Fallback to simple response
     const fallbackResponse = getWalletResponse(content);
     const responseUI = (
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <div className="bg-red border border-gray-200 rounded-lg p-4">
         <p className="text-sm leading-relaxed text-gray-900">{fallbackResponse}</p>
       </div>
     );
