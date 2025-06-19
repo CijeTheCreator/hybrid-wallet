@@ -275,6 +275,7 @@ async function confirmTransaction(
     ],
   });
 
+  console.log("Returning transaction pending UI")
   // Return the transaction pending UI
   return (
     <TransactionPendingUI

@@ -30,7 +30,14 @@ export function SendingConfirmationUI({
     setIsProcessing(true);
     try {
       const pendingUI = await confirmTransaction(parsedAmount, parsedCurrency, parsedRecipient);
-      setMessages((currentMessages: any[]) => [...currentMessages, pendingUI]);
+
+      // Create a proper message object with id and display
+      const messageObject = {
+        id: Date.now().toString(),
+        display: pendingUI
+      };
+
+      setMessages((currentMessages: any[]) => [...currentMessages, messageObject]);
     } catch (error) {
       console.error('Transaction confirmation error:', error);
       setIsProcessing(false);
@@ -93,7 +100,7 @@ export function SendingConfirmationUI({
           <X className="w-4 h-4" />
           <span>Cancel</span>
         </button>
-        
+
         <button
           onClick={handleConfirm}
           disabled={isProcessing}
@@ -117,7 +124,7 @@ export function SendingConfirmationUI({
       {/* Security Notice */}
       <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-xs text-blue-800">
-          🔒 This transaction will be processed securely on the blockchain. 
+          🔒 This transaction will be processed securely on the blockchain.
           Please verify all details before confirming.
         </p>
       </div>
