@@ -48,7 +48,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
 
   const handleSendMessage = async (content: string) => {
     let activeChatId = currentChatId;
-    
+    console.log("######################### 1")
     // If we're on the home page, create a new chat ID and update URL
     if (isHomePage) {
       activeChatId = generateChatId();
