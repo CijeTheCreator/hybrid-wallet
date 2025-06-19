@@ -70,7 +70,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <p className="text-sm leading-relaxed text-gray-900">
               I'm here to help with your cryptocurrency wallet. How can I assist you today?
-              {error}
+              {error.message}
             </p>
           </div>
         )
