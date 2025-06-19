@@ -51,16 +51,23 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     console.log("######################### 1")
     // If we're on the home page, create a new chat ID and update URL
     if (isHomePage) {
+       console.log("######################### 2")
       activeChatId = generateChatId();
+       console.log("######################### 3")
       setCurrentChatId(activeChatId);
+       console.log("######################### 4")
       // Update URL without navigation
       window.history.pushState({}, '', `/chats/${activeChatId}`);
+       console.log("######################### 5")
     }
 
     try {
       // Submit message to AI and get response
+       console.log("######################### 6")
       const response = await submitUserMessage(content);
+       console.log("######################### 7")
       setMessages(currentMessages => [...currentMessages, response]);
+       console.log("######################### 8")
     } catch (error) {
       console.error('Error sending message:', error);
       // Fallback to simple response
