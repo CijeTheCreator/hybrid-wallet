@@ -6,15 +6,11 @@ import { cn } from '@/lib/utils';
 import { AccountSwitcher } from './AccountSwitcher';
 import { EnhancedChatInput } from './EnhancedChatInput';
 
-interface Message {
-  id: string;
-  content: string;
-  role: 'user' | 'assistant';
-  thinking?: boolean;
-}
-
 interface ChatAreaProps {
-  messages: Message[];
+  messages: Array<{
+    id: string;
+    display: React.ReactNode;
+  }>;
   onSendMessage: (content: string) => void;
   isHomePage?: boolean;
   onInputFocus?: () => void;
@@ -101,33 +97,9 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputF
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-3xl mx-auto space-y-6">
           {messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                "flex",
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              )}
-            >
-              <div
-                className={cn(
-                  "max-w-[80%] rounded-lg p-4",
-                  message.role === 'user'
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-white border border-gray-200'
-                )}
-              >
-                {message.thinking ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                    </div>
-                    <span className="text-gray-600 text-sm">Thinking...</span>
-                  </div>
-                ) : (
-                  <p className="text-sm leading-relaxed">{message.content}</p>
-                )}
+            <div key={message.id} className="flex justify-start">
+              <div className="max-w-[80%]">
+                {message.display}
               </div>
             </div>
           ))}

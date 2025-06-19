@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { ChatArea } from './ChatArea';
 import { useToast } from './ToastProvider';
+import { useAIState, useUIState, useActions } from 'ai/rsc';
+import type { AI } from '@/lib/ai';
 
 interface ChatInterfaceProps {
   chatId?: string;
@@ -15,13 +17,12 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const { showToast } = useToast();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [messages, setMessages] = useState<Array<{
-    id: string;
-    content: string;
-    role: 'user' | 'assistant';
-    thinking?: boolean;
-  }>>([]);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
+
+  // AI state management
+  const [aiState] = useAIState<typeof AI>();
+  const [messages, setMessages] = useUIState<typeof AI>();
+  const { submitUserMessage } = useActions<typeof AI>();
 
   // Check if we're on the home page (no chatId)
   const isHomePage = !currentChatId;
@@ -45,7 +46,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     }
   }, [isHomePage, showToast]);
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     let activeChatId = currentChatId;
     
     // If we're on the home page, create a new chat ID and update URL
@@ -56,35 +57,25 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
       window.history.pushState({}, '', `/chats/${activeChatId}`);
     }
 
-    const userMessage = {
-      id: Date.now().toString(),
-      content,
-      role: 'user' as const,
-    };
-
-    const thinkingMessage = {
-      id: (Date.now() + 1).toString(),
-      content: 'Thinking...',
-      role: 'assistant' as const,
-      thinking: true,
-    };
-
-    setMessages(prev => [...prev, userMessage, thinkingMessage]);
-
-    // Simulate AI response
-    setTimeout(() => {
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === thinkingMessage.id 
-            ? { 
-                ...msg, 
-                content: generateAIResponse(content),
-                thinking: false 
-              }
-            : msg
+    try {
+      // Submit message to AI and get response
+      const response = await submitUserMessage(content);
+      setMessages(currentMessages => [...currentMessages, response]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // Fallback to simple response
+      const fallbackResponse = {
+        id: Date.now().toString(),
+        display: (
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <p className="text-sm leading-relaxed text-gray-900">
+              I'm here to help with your cryptocurrency wallet. How can I assist you today?
+            </p>
+          </div>
         )
-      );
-    }, 2500);
+      };
+      setMessages(currentMessages => [...currentMessages, fallbackResponse]);
+    }
   };
 
   const handleNewChat = () => {
@@ -97,16 +88,6 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     return `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
-  const generateAIResponse = (userMessage: string): string => {
-    const responses = [
-      "I understand your question. Let me help you with that. This is a simulated response to demonstrate the chat functionality.",
-      "That's an interesting point. Here's what I think about it: This interface demonstrates smooth animations and responsive design patterns.",
-      "I can help you with that. This response shows how the AI agent would provide thoughtful, detailed answers to user queries.",
-      "Thank you for your message. This simulated response demonstrates the chat interface's ability to handle various types of conversations."
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
-
   // Load messages for existing chat (in a real app, this would fetch from an API)
   useEffect(() => {
     if (chatId && chatId !== currentChatId) {
@@ -115,7 +96,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
       // For now, we'll just ensure messages are empty for new chats
       setMessages([]);
     }
-  }, [chatId, currentChatId]);
+  }, [chatId, currentChatId, setMessages]);
 
   return (
     <div className="flex h-screen bg-gray-50 relative">
