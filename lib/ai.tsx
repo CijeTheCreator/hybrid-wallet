@@ -241,23 +241,11 @@ async function confirmTransaction(
   amount: number,
   currency: string,
   recipient: string
-): Promise<{
-  id: string;
-  display: ReactNode;
-}> {
+): Promise<ReactNode> {
   'use server';
 
   const aiState = getMutableAIState<typeof AI>();
   
-  // Generate transaction pending UI
-  const display = (
-    <TransactionPendingUI
-      amount={amount}
-      currency={currency}
-      recipient={recipient}
-    />
-  );
-
   // Add transaction confirmation to AI state
   aiState.done({
     ...aiState.get(),
@@ -271,10 +259,14 @@ async function confirmTransaction(
     ],
   });
 
-  return {
-    id: Date.now().toString(),
-    display,
-  };
+  // Return the transaction pending UI
+  return (
+    <TransactionPendingUI
+      amount={amount}
+      currency={currency}
+      recipient={recipient}
+    />
+  );
 }
 
 // Create the AI instance
