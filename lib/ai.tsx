@@ -72,6 +72,7 @@ async function submitUserMessage(content: string): Promise<{
 }> {
   'use server';
 
+  console.log("##### 2")
   const aiState = getMutableAIState<typeof AI>();
   const currentState = aiState.get();
   
