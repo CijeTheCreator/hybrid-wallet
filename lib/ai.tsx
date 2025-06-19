@@ -1,8 +1,18 @@
 import { createAI, getMutableAIState, streamUI } from 'ai/rsc';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ReactNode } from 'react';
 import { z } from 'zod';
 import { SendingConfirmationUI } from '@/components/ai/SendingConfirmationUI';
 import { TransactionPendingUI } from '@/components/ai/TransactionPendingUI';
+
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
+
+const model = genAI.getGenerativeModel({
+      model: 'gemini-pro',
+      generationConfig: {
+        temperature: 0.1, // Lower temperature for more consistent function calling
+      }
+    })
 
 // Define the AI state and UI state types
 export interface AIState {
@@ -78,7 +88,7 @@ async function submitUserMessage(content: string): Promise<{
 
   try {
     const result = await streamUI({
-      model: 'gpt-4o', // Using OpenAI since Gemini isn't directly supported
+      model: model, 
       system: `You are a helpful cryptocurrency wallet assistant. You can help with:
       - Sending cryptocurrency (use the sendCrypto tool when users want to send/transfer/pay crypto)
       - Checking balances
