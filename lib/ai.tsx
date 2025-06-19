@@ -6,7 +6,8 @@ import { SendingConfirmationUI } from '@/components/ai/SendingConfirmationUI';
 import { TransactionPendingUI } from '@/components/ai/TransactionPendingUI';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
-
+console.log("Google Gemini Key:")
+console.log(process.env.GOOGLE_GEMINI_API_KEY!)
 const model = genAI.getGenerativeModel({
   model: 'gemini-pro',
   generationConfig: {
