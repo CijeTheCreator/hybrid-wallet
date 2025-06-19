@@ -5,7 +5,7 @@ import { SendingConfirmationUI } from '@/components/ai/SendingConfirmationUI';
 import { TransactionPendingUI } from '@/components/ai/TransactionPendingUI';
 
 // Initialize Google Gemini
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || 'dummy-key');
 
 // Define the AI state and UI state types
 export interface AIState {
@@ -22,45 +22,6 @@ export interface UIState {
   id: string;
   display: ReactNode;
 }
-
-// Function definitions for Gemini
-const functions = {
-  send_cryptocurrency: {
-    description: 'Process a cryptocurrency sending request',
-    parameters: {
-      type: 'object',
-      properties: {
-        amount: {
-          type: 'number',
-          description: 'The amount of cryptocurrency to send'
-        },
-        currency: {
-          type: 'string',
-          description: 'The cryptocurrency symbol (e.g., ETH, BTC, USDC, ALGO)',
-          enum: ['ETH', 'BTC', 'USDC', 'ALGO', 'MATIC', 'SOL', 'AVAX', 'ADA', 'DOT', 'LINK', 'UNI']
-        },
-        recipient: {
-          type: 'string',
-          description: 'The recipient username or wallet address'
-        }
-      },
-      required: ['amount', 'currency', 'recipient']
-    }
-  },
-  general_response: {
-    description: 'Provide a general response for non-transaction queries',
-    parameters: {
-      type: 'object',
-      properties: {
-        response: {
-          type: 'string',
-          description: 'A helpful response to the user query'
-        }
-      },
-      required: ['response']
-    }
-  }
-};
 
 // Main AI action using streamUI
 async function submitUserMessage(content: string): Promise<{
@@ -84,87 +45,173 @@ async function submitUserMessage(content: string): Promise<{
     ],
   });
 
-  const result = await streamUI({
-    model: genAI.getGenerativeModel({ 
-      model: 'gemini-pro',
-      generationConfig: {
-        temperature: 0.1, // Lower temperature for more consistent function calling
-      }
-    }),
-    initial: (
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-600">Processing your request...</p>
-        </div>
-      </div>
-    ),
-    system: `You are a helpful cryptocurrency wallet assistant. 
+  // Simple pattern matching for demo purposes
+  const lowerContent = content.toLowerCase();
+  
+  // Check if this is a send/transfer request
+  const isSendRequest = lowerContent.includes('send') || 
+                       lowerContent.includes('transfer') || 
+                       lowerContent.includes('pay');
+  
+  if (isSendRequest) {
+    // Extract amount, currency, and recipient using regex
+    const amountMatch = content.match(/(\d+(?:\.\d+)?)/);
+    const currencyMatch = content.match(/\b(ETH|BTC|USDC|ALGO|MATIC|SOL|AVAX|ADA|DOT|LINK|UNI)\b/i);
+    const recipientMatch = content.match(/@(\w+)/) || content.match(/to (\w+)/i);
     
-    When users want to send, transfer, or pay cryptocurrency:
-    - Use the send_cryptocurrency function
-    - Extract the amount, currency, and recipient from their message
-    - Be flexible with recipient formats (usernames with @, wallet addresses, or plain names)
-    
-    For all other queries (balance checks, help, general questions):
-    - Use the general_response function
-    - Provide helpful, concise responses about cryptocurrency and wallet operations`,
-    
-    messages: [
-      {
-        role: 'user',
-        content,
-      },
-    ],
-    
-    text: ({ content, done }) => {
-      if (done) {
-        aiState.done({
-          ...aiState.get(),
-          messages: [
-            ...aiState.get().messages,
-            {
-              id: Date.now().toString(),
-              role: 'assistant',
-              content,
-            },
-          ],
-        });
-      }
+    const amount = amountMatch ? parseFloat(amountMatch[1]) : 1;
+    const currency = currencyMatch ? currencyMatch[1].toUpperCase() : 'ETH';
+    const recipient = recipientMatch ? recipientMatch[1] : 'Unknown';
 
-      return (
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm leading-relaxed text-gray-900">{content}</p>
-        </div>
+    try {
+      const result = await streamUI({
+        model: genAI.getGenerativeModel({ 
+          model: 'gemini-pro',
+          generationConfig: {
+            temperature: 0.1,
+          }
+        }),
+        initial: (
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-gray-600">Preparing transaction...</p>
+            </div>
+          </div>
+        ),
+        system: 'You are a helpful cryptocurrency wallet assistant preparing a transaction.',
+        messages: [
+          {
+            role: 'user',
+            content: `Prepare to send ${amount} ${currency} to ${recipient}`,
+          },
+        ],
+        text: ({ content, done }) => {
+          if (done) {
+            aiState.done({
+              ...aiState.get(),
+              messages: [
+                ...aiState.get().messages,
+                {
+                  id: Date.now().toString(),
+                  role: 'assistant',
+                  content,
+                },
+              ],
+            });
+          }
+
+          return (
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <p className="text-sm leading-relaxed text-gray-900">{content}</p>
+            </div>
+          );
+        },
+      });
+
+      // After a delay, show the confirmation UI
+      setTimeout(() => {
+        const confirmationUI = (
+          <SendingConfirmationUI
+            amount={amount}
+            currency={currency}
+            recipient={recipient}
+            originalMessage={content}
+          />
+        );
+      }, 1000);
+
+      const confirmationUI = (
+        <SendingConfirmationUI
+          amount={amount}
+          currency={currency}
+          recipient={recipient}
+          originalMessage={content}
+        />
       );
-    },
 
-    tools: {
-      send_cryptocurrency: {
-        description: functions.send_cryptocurrency.description,
-        parameters: functions.send_cryptocurrency.parameters,
-        generate: async function* ({ amount, currency, recipient }) {
-          yield (
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-600">Preparing transaction...</p>
-              </div>
-            </div>
-          );
+      aiState.update({
+        ...aiState.get(),
+        messages: [
+          ...aiState.get().messages,
+          {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: `Transaction prepared: ${amount} ${currency} to ${recipient}`,
+            ui: confirmationUI,
+          },
+        ],
+      });
 
-          // Simulate processing delay
-          await new Promise(resolve => setTimeout(resolve, 1000));
+      return {
+        id: Date.now().toString(),
+        display: confirmationUI,
+      };
 
-          const confirmationUI = (
-            <SendingConfirmationUI
-              amount={amount}
-              currency={currency}
-              recipient={recipient}
-              originalMessage={content}
-            />
-          );
+    } catch (error) {
+      console.error('Error in transaction preparation:', error);
+      // Fallback to simple confirmation UI
+      const confirmationUI = (
+        <SendingConfirmationUI
+          amount={amount}
+          currency={currency}
+          recipient={recipient}
+          originalMessage={content}
+        />
+      );
 
+      aiState.update({
+        ...aiState.get(),
+        messages: [
+          ...aiState.get().messages,
+          {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: `Transaction prepared: ${amount} ${currency} to ${recipient}`,
+            ui: confirmationUI,
+          },
+        ],
+      });
+
+      return {
+        id: Date.now().toString(),
+        display: confirmationUI,
+      };
+    }
+  }
+
+  // Handle general queries
+  try {
+    const result = await streamUI({
+      model: genAI.getGenerativeModel({ 
+        model: 'gemini-pro',
+        generationConfig: {
+          temperature: 0.7,
+        }
+      }),
+      initial: (
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-gray-600">Thinking...</p>
+          </div>
+        </div>
+      ),
+      system: `You are a helpful cryptocurrency wallet assistant. You can help with:
+      - Checking balances
+      - Explaining crypto concepts
+      - Providing wallet management guidance
+      - Answering general questions about cryptocurrency
+      
+      Keep responses concise and helpful.`,
+      messages: [
+        {
+          role: 'user',
+          content,
+        },
+      ],
+      text: ({ content, done }) => {
+        if (done) {
           aiState.done({
             ...aiState.get(),
             messages: [
@@ -172,61 +219,53 @@ async function submitUserMessage(content: string): Promise<{
               {
                 id: Date.now().toString(),
                 role: 'assistant',
-                content: `Prepared transaction: ${amount} ${currency} to ${recipient}`,
-                ui: confirmationUI,
+                content,
               },
             ],
           });
+        }
 
-          return confirmationUI;
-        },
+        return (
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <p className="text-sm leading-relaxed text-gray-900">{content}</p>
+          </div>
+        );
       },
+    });
 
-      general_response: {
-        description: functions.general_response.description,
-        parameters: functions.general_response.parameters,
-        generate: async function* ({ response }) {
-          yield (
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-600">Thinking...</p>
-              </div>
-            </div>
-          );
+    return {
+      id: Date.now().toString(),
+      display: result.value,
+    };
 
-          // Simulate thinking delay
-          await new Promise(resolve => setTimeout(resolve, 500));
+  } catch (error) {
+    console.error('Error in general response:', error);
+    
+    // Fallback response
+    const fallbackResponse = getWalletResponse(content);
+    const responseUI = (
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <p className="text-sm leading-relaxed text-gray-900">{fallbackResponse}</p>
+      </div>
+    );
 
-          const responseUI = (
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <p className="text-sm leading-relaxed text-gray-900">{response}</p>
-            </div>
-          );
-
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: Date.now().toString(),
-                role: 'assistant',
-                content: response,
-                ui: responseUI,
-              },
-            ],
-          });
-
-          return responseUI;
+    aiState.update({
+      ...aiState.get(),
+      messages: [
+        ...aiState.get().messages,
+        {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: fallbackResponse,
         },
-      },
-    },
-  });
+      ],
+    });
 
-  return {
-    id: Date.now().toString(),
-    display: result.value,
-  };
+    return {
+      id: Date.now().toString(),
+      display: responseUI,
+    };
+  }
 }
 
 // Transaction confirmation action
@@ -252,7 +291,7 @@ async function confirmTransaction(
   );
 
   // Add transaction confirmation to AI state
-  aiState.done({
+  aiState.update({
     ...aiState.get(),
     messages: [
       ...aiState.get().messages,
@@ -269,6 +308,41 @@ async function confirmTransaction(
     id: Date.now().toString(),
     display,
   };
+}
+
+// Fallback response generator
+function getWalletResponse(message: string): string {
+  const lowerMessage = message.toLowerCase();
+  
+  if (lowerMessage.includes('balance')) {
+    return "I can help you check your wallet balance. Your current balances are: ETH: 2.45, USDC: 1,234.56, ALGO: 500.00. Would you like to see more details for any specific token?";
+  }
+  
+  if (lowerMessage.includes('receive') || lowerMessage.includes('deposit')) {
+    return "To receive cryptocurrency, you can share your wallet address or generate a QR code. Would you like me to show your receiving address for a specific token?";
+  }
+  
+  if (lowerMessage.includes('swap') || lowerMessage.includes('exchange')) {
+    return "I can help you swap between different cryptocurrencies. What tokens would you like to swap? For example, you could swap ETH for USDC or vice versa.";
+  }
+  
+  if (lowerMessage.includes('bridge')) {
+    return "Bridging allows you to move assets between different blockchains. Which chains would you like to bridge between? Popular options include Ethereum, Polygon, and Avalanche.";
+  }
+  
+  if (lowerMessage.includes('schedule')) {
+    return "You can schedule transactions to be executed at a specific time or when certain conditions are met. What type of scheduled transaction would you like to set up?";
+  }
+  
+  if (lowerMessage.includes('borrow') || lowerMessage.includes('lend')) {
+    return "I can help you explore DeFi lending and borrowing options. You can lend your crypto to earn yield or borrow against your holdings. What are you interested in?";
+  }
+  
+  if (lowerMessage.includes('help') || lowerMessage.includes('what can you do')) {
+    return "I'm your AI wallet assistant! I can help you send crypto, check balances, swap tokens, bridge assets, schedule transactions, and explore DeFi opportunities. What would you like to do?";
+  }
+  
+  return "I'm here to help with your cryptocurrency wallet needs. I can assist with sending crypto, checking balances, swapping tokens, and more. How can I help you today?";
 }
 
 // Create the AI instance
