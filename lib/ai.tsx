@@ -8,11 +8,11 @@ import { TransactionPendingUI } from '@/components/ai/TransactionPendingUI';
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
 
 const model = genAI.getGenerativeModel({
-      model: 'gemini-pro',
-      generationConfig: {
-        temperature: 0.1, // Lower temperature for more consistent function calling
-      }
-    })
+  model: 'gemini-pro',
+  generationConfig: {
+    temperature: 0.1,
+  }
+});
 
 // Define the AI state and UI state types
 export interface AIState {
@@ -72,12 +72,13 @@ async function submitUserMessage(content: string): Promise<{
   'use server';
 
   const aiState = getMutableAIState<typeof AI>();
+  const currentState = aiState.get();
   
   // Add user message to AI state
   aiState.update({
-    ...aiState.get(),
+    ...currentState,
     messages: [
-      ...aiState.get().messages,
+      ...currentState.messages,
       {
         id: Date.now().toString(),
         role: 'user',
@@ -105,10 +106,11 @@ async function submitUserMessage(content: string): Promise<{
       ],
       text: ({ content, done }) => {
         if (done) {
+          const currentState = aiState.get();
           aiState.done({
-            ...aiState.get(),
+            ...currentState,
             messages: [
-              ...aiState.get().messages,
+              ...currentState.messages,
               {
                 id: Date.now().toString(),
                 role: 'assistant',
@@ -143,10 +145,11 @@ async function submitUserMessage(content: string): Promise<{
             );
 
             // Add to AI state
+            const currentState = aiState.get();
             aiState.done({
-              ...aiState.get(),
+              ...currentState,
               messages: [
-                ...aiState.get().messages,
+                ...currentState.messages,
                 {
                   id: Date.now().toString(),
                   role: 'assistant',
@@ -201,10 +204,11 @@ async function submitUserMessage(content: string): Promise<{
         />
       );
 
+      const currentState = aiState.get();
       aiState.done({
-        ...aiState.get(),
+        ...currentState,
         messages: [
-          ...aiState.get().messages,
+          ...currentState.messages,
           {
             id: Date.now().toString(),
             role: 'assistant',
@@ -227,10 +231,11 @@ async function submitUserMessage(content: string): Promise<{
       </div>
     );
 
+    const currentState = aiState.get();
     aiState.done({
-      ...aiState.get(),
+      ...currentState,
       messages: [
-        ...aiState.get().messages,
+        ...currentState.messages,
         {
           id: Date.now().toString(),
           role: 'assistant',
@@ -255,12 +260,13 @@ async function confirmTransaction(
   'use server';
 
   const aiState = getMutableAIState<typeof AI>();
+  const currentState = aiState.get();
   
   // Add transaction confirmation to AI state
   aiState.done({
-    ...aiState.get(),
+    ...currentState,
     messages: [
-      ...aiState.get().messages,
+      ...currentState.messages,
       {
         id: Date.now().toString(),
         role: 'assistant',
