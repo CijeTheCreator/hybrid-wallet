@@ -71,11 +71,11 @@ async function submitUserMessage(content: string): Promise<{
   display: ReactNode;
 }> {
   'use server';
-
+console.log("### 1")
   const aiState = getMutableAIState<typeof AI>();
-
+console.log("### 2")
   const currentState = aiState.get();
-
+console.log("### 3")
   
   // Add user message to AI state
   aiState.update({
@@ -89,7 +89,7 @@ async function submitUserMessage(content: string): Promise<{
       },
     ],
   });
-
+console.log("### 4")
   try {
     const result = await streamUI({
       model: model, 
@@ -122,7 +122,7 @@ async function submitUserMessage(content: string): Promise<{
             ],
           });
         }
-
+console.log("### 5")
         return (
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <p className="text-sm leading-relaxed text-gray-900">{content}</p>
@@ -146,7 +146,7 @@ async function submitUserMessage(content: string): Promise<{
                 </div>
               </div>
             );
-
+console.log("### 6")
             // Add to AI state
             const currentState = aiState.get();
             aiState.done({
@@ -160,7 +160,7 @@ async function submitUserMessage(content: string): Promise<{
                 },
               ],
             });
-
+console.log("### 7")
             return (
               <SendingConfirmationUI
                 amount={amount}
