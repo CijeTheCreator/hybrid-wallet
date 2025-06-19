@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Check, X, ArrowRight, Wallet } from 'lucide-react';
-import { useActions } from 'ai/rsc';
+import { useActions, useUIState } from 'ai/rsc';
 
 interface SendingConfirmationUIProps {
   amount?: number;
@@ -19,6 +19,7 @@ export function SendingConfirmationUI({
 }: SendingConfirmationUIProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const { confirmTransaction } = useActions();
+  const [_, setMessages] = useUIState();
 
   // Parse amount and currency from message if not provided
   const parsedAmount = amount || parseFloat(originalMessage.match(/[\d.]+/)?.[0] || '0');
@@ -28,7 +29,8 @@ export function SendingConfirmationUI({
   const handleConfirm = async () => {
     setIsProcessing(true);
     try {
-      await confirmTransaction(parsedAmount, parsedCurrency, parsedRecipient);
+      const pendingUI = await confirmTransaction(parsedAmount, parsedCurrency, parsedRecipient);
+      setMessages((currentMessages: any[]) => [...currentMessages, pendingUI]);
     } catch (error) {
       console.error('Transaction confirmation error:', error);
       setIsProcessing(false);
