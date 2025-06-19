@@ -59,7 +59,9 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
 
     try {
       // Submit message to AI and get response
+      console.log(1)
       const response = await submitUserMessage(content);
+      console.log(2)
       setMessages(currentMessages => [...currentMessages, response]);
     } catch (error) {
       console.error('Error sending message:', error);
@@ -70,7 +72,6 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <p className="text-sm leading-relaxed text-gray-900">
               I'm here to help with your cryptocurrency wallet. How can I assist you today?
-              {error.message}
             </p>
           </div>
         )
