@@ -74,7 +74,11 @@ async function submitUserMessage(content: string): Promise<{
 
   console.log("##### 2")
   const aiState = getMutableAIState<typeof AI>();
+    console.log("##### 3")
+
   const currentState = aiState.get();
+    console.log("##### 4")
+
   
   // Add user message to AI state
   aiState.update({
