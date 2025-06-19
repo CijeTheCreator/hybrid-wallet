@@ -86,21 +86,7 @@ async function submitUserMessage(content: string): Promise<{
             content: `Prepare to send ${amount} ${currency} to ${recipient}`,
           },
         ],
-        text: ({ content, done }) => {
-          if (done) {
-            aiState.done({
-              ...aiState.get(),
-              messages: [
-                ...aiState.get().messages,
-                {
-                  id: Date.now().toString(),
-                  role: 'assistant',
-                  content,
-                },
-              ],
-            });
-          }
-
+        text: ({ content }) => {
           return (
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <p className="text-sm leading-relaxed text-gray-900">{content}</p>
@@ -108,18 +94,6 @@ async function submitUserMessage(content: string): Promise<{
           );
         },
       });
-
-      // After a delay, show the confirmation UI
-      setTimeout(() => {
-        const confirmationUI = (
-          <SendingConfirmationUI
-            amount={amount}
-            currency={currency}
-            recipient={recipient}
-            originalMessage={content}
-          />
-        );
-      }, 1000);
 
       const confirmationUI = (
         <SendingConfirmationUI
@@ -141,6 +115,11 @@ async function submitUserMessage(content: string): Promise<{
             ui: confirmationUI,
           },
         ],
+      });
+
+      // Finalize AI state
+      aiState.done({
+        ...aiState.get(),
       });
 
       return {
@@ -171,6 +150,11 @@ async function submitUserMessage(content: string): Promise<{
             ui: confirmationUI,
           },
         ],
+      });
+
+      // Finalize AI state
+      aiState.done({
+        ...aiState.get(),
       });
 
       return {
@@ -210,27 +194,30 @@ async function submitUserMessage(content: string): Promise<{
           content,
         },
       ],
-      text: ({ content, done }) => {
-        if (done) {
-          aiState.done({
-            ...aiState.get(),
-            messages: [
-              ...aiState.get().messages,
-              {
-                id: Date.now().toString(),
-                role: 'assistant',
-                content,
-              },
-            ],
-          });
-        }
-
+      text: ({ content }) => {
         return (
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <p className="text-sm leading-relaxed text-gray-900">{content}</p>
           </div>
         );
       },
+    });
+
+    aiState.update({
+      ...aiState.get(),
+      messages: [
+        ...aiState.get().messages,
+        {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: 'AI response generated',
+        },
+      ],
+    });
+
+    // Finalize AI state
+    aiState.done({
+      ...aiState.get(),
     });
 
     return {
@@ -259,6 +246,11 @@ async function submitUserMessage(content: string): Promise<{
           content: fallbackResponse,
         },
       ],
+    });
+
+    // Finalize AI state
+    aiState.done({
+      ...aiState.get(),
     });
 
     return {
@@ -302,6 +294,11 @@ async function confirmTransaction(
         ui: display,
       },
     ],
+  });
+
+  // Finalize AI state
+  aiState.done({
+    ...aiState.get(),
   });
 
   return {
