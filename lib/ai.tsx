@@ -77,7 +77,7 @@ async function submitUserMessage(content: string): Promise<{
     console.log("##### 3")
 
   const currentState = aiState.get();
-    console.log("##### 4")
+    console.log("##### 5")
 
   
   // Add user message to AI state
