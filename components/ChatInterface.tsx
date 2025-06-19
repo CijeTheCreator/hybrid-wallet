@@ -59,9 +59,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
 
     try {
       // Submit message to AI and get response
-      console.log(1)
       const response = await submitUserMessage(content);
-      console.log(2)
       setMessages(currentMessages => [...currentMessages, response]);
     } catch (error) {
       console.error('Error sending message:', error);
