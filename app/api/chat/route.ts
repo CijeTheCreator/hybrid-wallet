@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   const { messages } = await request.json();
 
   const result = streamText({
-    model: google('gemini-1.5-pro'),
+    model: google('gemini-2.5-flash'),
     system: `You are a helpful cryptocurrency wallet assistant. You can help users with:
     - Sending cryptocurrency to other users or addresses
     - Checking wallet balances and portfolio information

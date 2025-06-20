@@ -22,8 +22,8 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
 
-  // Use the new useChat hook from @ai-sdk/react
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  // Use the useChat hook properly
+  const { messages, append, isLoading } = useChat({
     api: '/api/chat',
   });
 
@@ -49,9 +49,9 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     }
   }, [isHomePage, showToast]);
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     let activeChatId = currentChatId;
-    
+
     // If we're on the home page, create a new chat ID and update URL
     if (isHomePage) {
       activeChatId = generateChatId();
@@ -60,17 +60,11 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
       window.history.pushState({}, '', `/chats/${activeChatId}`);
     }
 
-    // Create a synthetic event for the form submission
-    const syntheticEvent = {
-      preventDefault: () => {},
-      target: { message: { value: content } }
-    } as any;
-
-    // Update the input value and submit
-    handleInputChange({ target: { value: content } } as any);
-    setTimeout(() => {
-      handleSubmit(syntheticEvent);
-    }, 0);
+    // Send the message using the append function from useChat
+    await append({
+      role: 'user',
+      content: content
+    });
   };
 
   const handleNewChat = () => {
@@ -175,25 +169,24 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     <div className="flex h-screen bg-gray-50 relative">
       {/* Global Blur Overlay - only on home page when input is focused */}
       {isHomePage && (
-        <div 
-          className={`fixed inset-0 z-40 pointer-events-none transition-all duration-500 ease-out ${
-            isInputFocused 
-              ? 'opacity-100 backdrop-blur-md bg-white/20' 
+        <div
+          className={`fixed inset-0 z-40 pointer-events-none transition-all duration-500 ease-out ${isInputFocused
+              ? 'opacity-100 backdrop-blur-md bg-white/20'
               : 'opacity-0 backdrop-blur-none bg-transparent'
-          }`}
+            }`}
         />
       )}
 
-      <Sidebar 
-        expanded={sidebarExpanded} 
+      <Sidebar
+        expanded={sidebarExpanded}
         onToggle={() => setSidebarExpanded(!sidebarExpanded)}
         onNewChat={handleNewChat}
         currentChatId={currentChatId}
       />
-      
+
       <div className="flex-1 flex flex-col">
-        <ChatArea 
-          messages={transformedMessages} 
+        <ChatArea
+          messages={transformedMessages}
           onSendMessage={handleSendMessage}
           isHomePage={isHomePage}
           onInputFocus={() => setIsInputFocused(true)}
