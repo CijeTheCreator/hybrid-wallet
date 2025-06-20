@@ -11,6 +11,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@ai-sdk/google": "^0.0.52",
+    "@ai-sdk/react": "^0.0.62",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -43,7 +45,6 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "ai": "^3.4.32",
-    "@google/generative-ai": "^0.21.0",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",

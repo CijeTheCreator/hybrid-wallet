@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { ChatArea } from './ChatArea';
 import { useToast } from './ToastProvider';
-import { useAIState, useUIState, useActions } from 'ai/rsc';
-import type { AI } from '@/lib/ai';
+import { useChat } from '@ai-sdk/react';
+import { SendingConfirmationUI } from './ai/SendingConfirmationUI';
+import { TransactionPendingUI } from './ai/TransactionPendingUI';
+import { WalletBalance } from './ai/WalletBalance';
+import { SwapInterface } from './ai/SwapInterface';
 
 interface ChatInterfaceProps {
   chatId?: string;
@@ -19,10 +22,10 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
 
-  // AI state management
-  const [aiState] = useAIState<typeof AI>();
-  const [messages, setMessages] = useUIState<typeof AI>();
-  const { submitUserMessage } = useActions<typeof AI>();
+  // Use the new useChat hook from @ai-sdk/react
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    api: '/api/chat',
+  });
 
   // Check if we're on the home page (no chatId)
   const isHomePage = !currentChatId;
@@ -46,47 +49,31 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     }
   }, [isHomePage, showToast]);
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = (content: string) => {
     let activeChatId = currentChatId;
-    console.log("######################### 1")
+    
     // If we're on the home page, create a new chat ID and update URL
     if (isHomePage) {
-       console.log("######################### 2")
       activeChatId = generateChatId();
-       console.log("######################### 3")
       setCurrentChatId(activeChatId);
-       console.log("######################### 4")
       // Update URL without navigation
       window.history.pushState({}, '', `/chats/${activeChatId}`);
-       console.log("######################### 5")
     }
 
-    try {
-      // Submit message to AI and get response
-       console.log("######################### 6")
-      const response = await submitUserMessage(content);
-       console.log("######################### 7")
-      setMessages(currentMessages => [...currentMessages, response]);
-       console.log("######################### 8")
-    } catch (error) {
-      console.error('Error sending message:', error);
-      // Fallback to simple response
-      const fallbackResponse = {
-        id: Date.now().toString(),
-        display: (
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <p className="text-sm leading-relaxed text-gray-900">
-              I'm here to help with your cryptocurrency wallet. How can I assist you today?
-            </p>
-          </div>
-        )
-      };
-      setMessages(currentMessages => [...currentMessages, fallbackResponse]);
-    }
+    // Create a synthetic event for the form submission
+    const syntheticEvent = {
+      preventDefault: () => {},
+      target: { message: { value: content } }
+    } as any;
+
+    // Update the input value and submit
+    handleInputChange({ target: { value: content } } as any);
+    setTimeout(() => {
+      handleSubmit(syntheticEvent);
+    }, 0);
   };
 
   const handleNewChat = () => {
-    setMessages([]);
     setCurrentChatId(undefined);
     router.push('/');
   };
@@ -99,11 +86,90 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   useEffect(() => {
     if (chatId && chatId !== currentChatId) {
       setCurrentChatId(chatId);
-      // In a real application, you would fetch messages for this chatId
-      // For now, we'll just ensure messages are empty for new chats
-      setMessages([]);
     }
-  }, [chatId, currentChatId, setMessages]);
+  }, [chatId, currentChatId]);
+
+  // Transform messages to include tool invocation rendering
+  const transformedMessages = messages.map(message => ({
+    id: message.id,
+    display: (
+      <div key={message.id}>
+        {/* Regular message content */}
+        {message.content && (
+          <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+            <div className="text-sm font-medium text-gray-600 mb-2">
+              {message.role === 'user' ? 'You' : 'Assistant'}
+            </div>
+            <p className="text-sm leading-relaxed text-gray-900">{message.content}</p>
+          </div>
+        )}
+
+        {/* Tool invocations */}
+        {message.toolInvocations?.map(toolInvocation => {
+          const { toolName, toolCallId, state } = toolInvocation;
+
+          if (state === 'result') {
+            const { result } = toolInvocation;
+
+            if (toolName === 'sendCryptocurrency') {
+              return (
+                <div key={toolCallId} className="mb-4">
+                  <SendingConfirmationUI
+                    amount={result.amount}
+                    currency={result.currency}
+                    recipient={result.recipient}
+                    originalMessage={`Send ${result.amount} ${result.currency} to ${result.recipient}`}
+                  />
+                </div>
+              );
+            } else if (toolName === 'getWalletInfo') {
+              return (
+                <div key={toolCallId} className="mb-4">
+                  <WalletBalance
+                    query={result.query}
+                    data={result.data}
+                  />
+                </div>
+              );
+            } else if (toolName === 'swapCryptocurrency') {
+              return (
+                <div key={toolCallId} className="mb-4">
+                  <SwapInterface
+                    fromCurrency={result.fromCurrency}
+                    toCurrency={result.toCurrency}
+                    fromAmount={result.fromAmount}
+                    toAmount={result.toAmount}
+                    exchangeRate={result.exchangeRate}
+                    transactionId={result.transactionId}
+                    status={result.status}
+                  />
+                </div>
+              );
+            }
+          } else {
+            // Loading state
+            return (
+              <div key={toolCallId} className="mb-4">
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm text-gray-600">
+                      {toolName === 'sendCryptocurrency' && 'Preparing transaction...'}
+                      {toolName === 'getWalletInfo' && 'Loading wallet information...'}
+                      {toolName === 'swapCryptocurrency' && 'Processing swap...'}
+                      {!['sendCryptocurrency', 'getWalletInfo', 'swapCryptocurrency'].includes(toolName) && 'Processing...'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          return null;
+        })}
+      </div>
+    )
+  }));
 
   return (
     <div className="flex h-screen bg-gray-50 relative">
@@ -127,11 +193,12 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
       
       <div className="flex-1 flex flex-col">
         <ChatArea 
-          messages={messages} 
+          messages={transformedMessages} 
           onSendMessage={handleSendMessage}
           isHomePage={isHomePage}
           onInputFocus={() => setIsInputFocused(true)}
           onInputBlur={() => setIsInputFocused(false)}
+          isLoading={isLoading}
         />
       </div>
     </div>

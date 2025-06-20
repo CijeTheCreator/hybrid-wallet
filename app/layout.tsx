@@ -2,9 +2,11 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ToastProvider } from '@/components/ToastProvider';
-import { AI } from '@/lib/ai';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Agentic Wallet',
@@ -19,11 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AI>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </AI>
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

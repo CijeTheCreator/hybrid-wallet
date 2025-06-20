@@ -21,6 +21,7 @@ interface EnhancedChatInputProps {
   rows?: number;
   onFocus?: () => void;
   onBlur?: () => void;
+  disabled?: boolean;
 }
 
 interface HighlightedSegment {
@@ -54,7 +55,8 @@ export function EnhancedChatInput({
   placeholder = "Type your message...",
   rows = 2,
   onFocus,
-  onBlur
+  onBlur,
+  disabled = false
 }: EnhancedChatInputProps) {
   const [showContacts, setShowContacts] = useState(false);
   const [contactsPosition, setContactsPosition] = useState({ x: 0, y: 0 });
@@ -222,7 +224,7 @@ export function EnhancedChatInput({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!value.trim()) return;
+    if (!value.trim() || disabled) return;
     onSubmit(value.trim());
   };
 
@@ -347,11 +349,12 @@ export function EnhancedChatInput({
             onScroll={handleScroll}
             placeholder={placeholder}
             rows={rows}
+            disabled={disabled}
             spellCheck={false}
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
-            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-10"
+            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ 
               caretColor: 'black',
               color: 'transparent',
@@ -375,19 +378,21 @@ export function EnhancedChatInput({
           <div className="absolute bottom-4 right-4 flex items-center space-x-2 z-30">
             <button
               type="button"
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              disabled={disabled}
+              className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
             >
               <Plus className="w-4 h-4" />
             </button>
             <button
               type="button"
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              disabled={disabled}
+              className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
             >
               <Zap className="w-4 h-4" />
             </button>
             <button
               type="submit"
-              disabled={!value.trim()}
+              disabled={!value.trim() || disabled}
               className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Send className="w-4 h-4" />

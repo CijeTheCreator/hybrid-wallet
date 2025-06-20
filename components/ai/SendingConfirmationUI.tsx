@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Check, X, ArrowRight, Wallet } from 'lucide-react';
-import { useActions, useUIState } from 'ai/rsc';
 
 interface SendingConfirmationUIProps {
   amount?: number;
@@ -18,8 +17,7 @@ export function SendingConfirmationUI({
   originalMessage
 }: SendingConfirmationUIProps) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { confirmTransaction } = useActions();
-  const [_, setMessages] = useUIState();
+  const [showPending, setShowPending] = useState(false);
 
   // Parse amount and currency from message if not provided
   const parsedAmount = amount || parseFloat(originalMessage.match(/[\d.]+/)?.[0] || '0');
@@ -28,26 +26,53 @@ export function SendingConfirmationUI({
 
   const handleConfirm = async () => {
     setIsProcessing(true);
-    try {
-      const pendingUI = await confirmTransaction(parsedAmount, parsedCurrency, parsedRecipient);
-
-      // Create a proper message object with id and display
-      const messageObject = {
-        id: Date.now().toString(),
-        display: pendingUI
-      };
-
-      setMessages((currentMessages: any[]) => [...currentMessages, messageObject]);
-    } catch (error) {
-      console.error('Transaction confirmation error:', error);
+    
+    // Simulate transaction processing
+    setTimeout(() => {
       setIsProcessing(false);
-    }
+      setShowPending(true);
+    }, 2000);
   };
 
   const handleDecline = () => {
-    // Handle decline logic here
     console.log('Transaction declined');
   };
+
+  if (showPending) {
+    return (
+      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 max-w-md mx-auto shadow-lg">
+        {/* Header */}
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+            <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900">Transaction Pending</h3>
+            <p className="text-sm text-gray-600">Processing your transaction...</p>
+          </div>
+        </div>
+
+        {/* Transaction Summary */}
+        <div className="bg-white rounded-lg p-4 mb-4 border border-gray-100">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900 mb-1">
+              {parsedAmount} {parsedCurrency}
+            </div>
+            <div className="text-sm text-gray-600">
+              Sent to {parsedRecipient}
+            </div>
+          </div>
+        </div>
+
+        {/* Status */}
+        <div className="text-center">
+          <p className="text-xs text-gray-500">
+            Estimated completion: 2-5 minutes
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-br from-orange-50 to-pink-50 border border-orange-200 rounded-xl p-6 max-w-md mx-auto shadow-lg">

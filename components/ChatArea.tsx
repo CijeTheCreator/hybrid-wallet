@@ -15,9 +15,10 @@ interface ChatAreaProps {
   isHomePage?: boolean;
   onInputFocus?: () => void;
   onInputBlur?: () => void;
+  isLoading?: boolean;
 }
 
-export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputFocus, onInputBlur }: ChatAreaProps) {
+export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputFocus, onInputBlur, isLoading }: ChatAreaProps) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -83,6 +84,7 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputF
                 rows={3}
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
+                disabled={isLoading}
               />
             </div>
 
@@ -117,6 +119,18 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputF
               </div>
             </div>
           ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%]">
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm text-gray-600">Thinking...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -131,6 +145,7 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputF
             rows={2}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
+            disabled={isLoading}
           />
         </div>
       </div>
