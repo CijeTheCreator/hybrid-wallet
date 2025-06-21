@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { ChatArea } from './ChatArea';
 import { useToast } from './ToastProvider';
-import { useChat } from '@ai-sdk/react';
+import { useChat } from 'ai/react';
 import { SendingConfirmationUI } from './ai/SendingConfirmationUI';
 import { TransactionPendingUI } from './ai/TransactionPendingUI';
 import { WalletBalance } from './ai/WalletBalance';
@@ -57,7 +57,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
       activeChatId = generateChatId();
       setCurrentChatId(activeChatId);
       // Update URL without navigation
-      window.history.pushState({}, '', `/chats/${activeChatId}`);
+      // window.history.pushState({}, '', `/chats/${activeChatId}`);
     }
 
     // Send the message using the append function from useChat
@@ -82,6 +82,10 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
       setCurrentChatId(chatId);
     }
   }, [chatId, currentChatId]);
+
+
+  console.log("Messages:::::::")
+  console.log(messages)
 
   // Transform messages to include tool invocation rendering
   const transformedMessages = messages.map(message => ({
@@ -171,8 +175,8 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
       {isHomePage && (
         <div
           className={`fixed inset-0 z-40 pointer-events-none transition-all duration-500 ease-out ${isInputFocused
-              ? 'opacity-100 backdrop-blur-md bg-white/20'
-              : 'opacity-0 backdrop-blur-none bg-transparent'
+            ? 'opacity-100 backdrop-blur-md bg-white/20'
+            : 'opacity-0 backdrop-blur-none bg-transparent'
             }`}
         />
       )}
