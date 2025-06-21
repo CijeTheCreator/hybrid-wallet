@@ -22,10 +22,9 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
 
-  // Use the useChat hook properly
-  const { messages, append, isLoading } = useChat({
-    api: '/api/chat',
-  });
+
+  const [messages, setMessages] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
 
   // Check if we're on the home page (no chatId)
   const isHomePage = !currentChatId;
@@ -49,22 +48,43 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     }
   }, [isHomePage, showToast]);
 
+
   const handleSendMessage = async (content: string) => {
-    let activeChatId = currentChatId;
+    try {
+      setIsLoading(true);
 
-    // If we're on the home page, create a new chat ID and update URL
-    if (isHomePage) {
-      activeChatId = generateChatId();
-      setCurrentChatId(activeChatId);
-      // Update URL without navigation
-      // window.history.pushState({}, '', `/chats/${activeChatId}`);
+      // Add user message to the messages array
+      const userMessage = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        content: content
+      };
+
+      const updatedMessages = [...messages, userMessage];
+      setMessages(updatedMessages);
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: updatedMessages })
+      });
+
+      const data = await response.json();
+
+      // Handle multiple messages if returned
+      if (data.messages) {
+        const newMessages = [...updatedMessages, ...data.messages];
+        setMessages(newMessages);
+      } else {
+        // Handle single message
+        const newMessages = [...updatedMessages, data];
+        setMessages(newMessages);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Send the message using the append function from useChat
-    await append({
-      role: 'user',
-      content: content
-    });
   };
 
   const handleNewChat = () => {
@@ -172,14 +192,12 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   return (
     <div className="flex h-screen bg-gray-50 relative">
       {/* Global Blur Overlay - only on home page when input is focused */}
-      {isHomePage && (
-        <div
-          className={`fixed inset-0 z-40 pointer-events-none transition-all duration-500 ease-out ${isInputFocused
-            ? 'opacity-100 backdrop-blur-md bg-white/20'
-            : 'opacity-0 backdrop-blur-none bg-transparent'
-            }`}
-        />
-      )}
+      <div
+        className={`fixed inset-0 z-40 pointer-events-none transition-all duration-500 ease-out ${false
+          ? 'opacity-100 backdrop-blur-md bg-white/20'
+          : 'opacity-0 backdrop-blur-none bg-transparent'
+          }`}
+      />
 
       <Sidebar
         expanded={sidebarExpanded}
