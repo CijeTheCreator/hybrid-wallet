@@ -15,6 +15,20 @@ interface ChatInterfaceProps {
   chatId?: string;
 }
 
+// Simple markdown renderer function
+function renderMarkdown(text: string): string {
+  return text
+    // Bold text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Italic text
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Line breaks
+    .replace(/\n/g, '<br>')
+    // Lists
+    .replace(/^\* (.*$)/gim, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+}
+
 export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -22,9 +36,12 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(chatId);
 
-
-  const [messages, setMessages] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    api: '/api/chat',
+    onError: (error) => {
+      console.error('Chat error:', error);
+    }
+  });
 
   // Check if we're on the home page (no chatId)
   const isHomePage = !currentChatId;
@@ -48,52 +65,13 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     }
   }, [isHomePage, showToast]);
 
-
-  const handleSendMessage = async (content: string) => {
-    try {
-      setIsLoading(true);
-
-      // Add user message to the messages array
-      const userMessage = {
-        id: `user-${Date.now()}`,
-        role: 'user',
-        content: content
-      };
-
-      const updatedMessages = [...messages, userMessage];
-      setMessages(updatedMessages);
-
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: updatedMessages })
-      });
-
-      const data = await response.json();
-
-      // Handle multiple messages if returned
-      if (data.messages) {
-        const newMessages = [...updatedMessages, ...data.messages];
-        setMessages(newMessages);
-      } else {
-        // Handle single message
-        const newMessages = [...updatedMessages, data];
-        setMessages(newMessages);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSendMessage = (content: string) => {
+    handleSubmit({ preventDefault: () => {} } as any);
   };
 
   const handleNewChat = () => {
     setCurrentChatId(undefined);
     router.push('/');
-  };
-
-  const generateChatId = (): string => {
-    return `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
   // Load messages for existing chat (in a real app, this would fetch from an API)
@@ -102,10 +80,6 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
       setCurrentChatId(chatId);
     }
   }, [chatId, currentChatId]);
-
-
-  console.log("Messages:::::::")
-  console.log(messages)
 
   // Transform messages to include tool invocation rendering
   const transformedMessages = messages.map(message => ({
@@ -118,7 +92,12 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
             <div className="text-sm font-medium text-gray-600 mb-2">
               {message.role === 'user' ? 'You' : 'Assistant'}
             </div>
-            <p className="text-sm leading-relaxed text-gray-900">{message.content}</p>
+            <div 
+              className="text-sm leading-relaxed text-gray-900 prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ 
+                __html: renderMarkdown(message.content) 
+              }}
+            />
           </div>
         )}
 
@@ -206,10 +185,13 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
         currentChatId={currentChatId}
       />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-screen">
         <ChatArea
           messages={transformedMessages}
-          onSendMessage={handleSendMessage}
+          onSendMessage={(content) => {
+            handleInputChange({ target: { value: content } } as any);
+            handleSubmit({ preventDefault: () => {} } as any);
+          }}
           isHomePage={isHomePage}
           onInputFocus={() => setIsInputFocused(true)}
           onInputBlur={() => setIsInputFocused(false)}
