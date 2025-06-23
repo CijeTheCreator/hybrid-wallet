@@ -354,9 +354,9 @@ export function EnhancedChatInput({
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
-            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-10 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900"
+            className="w-full p-4 pr-16 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ 
-              caretColor: '#111827',
+              caretColor: 'black',
               color: 'transparent',
               // Ensure consistent font properties
               fontFamily: 'inherit',
@@ -368,7 +368,9 @@ export function EnhancedChatInput({
               textIndent: 'inherit',
               // Critical: Match overlay's text rendering
               textSizeAdjust: 'none',
-              WebkitTextSizeAdjust: 'none'
+              WebkitTextSizeAdjust: 'none',
+              // Make the caret more visible
+              mixBlendMode: 'difference'
             }}
           />
 

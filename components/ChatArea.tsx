@@ -61,7 +61,7 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputF
 
   if (messages.length === 0) {
     return (
-      <div className="h-full flex flex-col">
+      <div className="flex-1 flex flex-col relative">
         <div className="flex-1 flex items-center justify-center">
           <div className="max-w-2xl w-full px-6">
             <div className="text-center mb-8">
@@ -109,37 +109,33 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputF
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Messages Area - Scrollable */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          <div className="max-w-3xl mx-auto space-y-6">
-            {messages.map((message, index) => (
-              <div key={index} className="flex justify-start">
-                <div className="max-w-[80%]">
-                  {message.display}
-                </div>
+    <div className="flex-1 flex flex-col">
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {messages.map((message, index) => (
+            <div key={index} className="flex justify-start">
+              <div className="max-w-[80%]">
+                {message.display}
               </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="max-w-[80%]">
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                      <p className="text-sm text-gray-600">Thinking...</p>
-                    </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%]">
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm text-gray-600">Thinking...</p>
                   </div>
                 </div>
               </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Fixed Input Area at Bottom */}
-      <div className="border-t border-gray-200 bg-white p-6">
+      <div className="border-t border-gray-200 p-6">
         <div className="max-w-3xl mx-auto">
           <EnhancedChatInput
             value={input}
