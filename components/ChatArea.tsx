@@ -109,9 +109,10 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputF
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-3xl mx-auto space-y-6">
+    <div className="flex-1 flex flex-col h-full">
+      {/* Messages Area - Scrollable */}
+      <div className="flex-1 overflow-y-auto p-6 pb-0">
+        <div className="max-w-3xl mx-auto space-y-6 pb-6">
           {messages.map((message, index) => (
             <div key={index} className="flex justify-start">
               <div className="max-w-[80%]">
@@ -135,7 +136,8 @@ export function ChatArea({ messages, onSendMessage, isHomePage = false, onInputF
         </div>
       </div>
 
-      <div className="border-t border-gray-200 p-6">
+      {/* Fixed Input Area at Bottom */}
+      <div className="flex-shrink-0 border-t border-gray-200 bg-gray-50 p-6">
         <div className="max-w-3xl mx-auto">
           <EnhancedChatInput
             value={input}
